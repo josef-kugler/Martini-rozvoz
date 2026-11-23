@@ -478,6 +478,13 @@ document.addEventListener('click',e=>{
 });
 
 /* ================= navigace – rovnou spustí trasu ================= */
+// aktuální poloha kurýra = start trasy (Mapy.com bez startu navigaci nespustí)
+let myPos=null,geoOn=false;
+function startGeo(){
+  if(geoOn||!ONWEB||!navigator.geolocation)return;geoOn=true;
+  navigator.geolocation.watchPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude}},()=>{geoOn=false},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
+}
+const fx=n=>(+n).toFixed(6);
 function navTarget(o){
   const text=[o.street,o.city||settings.city].filter(Boolean).join(', ');
   const ll=o.lat?`${o.lat},${o.lon}`:'';
@@ -485,7 +492,7 @@ function navTarget(o){
   const g=`https://www.google.com/maps/dir/?api=1&destination=${e}&travelmode=driving&dir_action=navigate`;
   switch(settings.navApp){
     case 'waze':return {url:ll?`https://waze.com/ul?ll=${ll}&navigate=yes`:`https://waze.com/ul?q=${encodeURIComponent(text)}&navigate=yes`};
-    case 'mapy':return {url:o.lat?`https://mapy.com/fnc/v1/route?end=${o.lon},${o.lat}&routeType=car_fast&navigate=true`:`https://mapy.com/fnc/v1/search?query=${encodeURIComponent(text)}`};
+    case 'mapy':return {url:o.lat?`https://mapy.com/fnc/v1/route?mapset=traffic${myPos?`&start=${fx(myPos.lon)},${fx(myPos.lat)}`:''}&end=${fx(o.lon)},${fx(o.lat)}&routeType=car_fast_traffic&navigate=true`:`https://mapy.com/fnc/v1/search?query=${encodeURIComponent(text)}`};
     case 'apple':return {url:`https://maps.apple.com/?daddr=${e}&dirflg=d`};
     default:return {url:g};
   }
@@ -553,7 +560,15 @@ $('list').addEventListener('click',e=>{
   const card=b.closest('.card'),o=orders.find(x=>x.id===card.dataset.id);if(!o)return;
   const a=b.dataset.a;
   if(a==='toggle'){opened.has(o.id)?opened.delete(o.id):opened.add(o.id);card.classList.toggle('open');b.setAttribute('aria-expanded',opened.has(o.id))}
-  if(a==='nav'&&!o.lat&&o.street)geocode(o).then(render);
+  if(a==='nav'){
+    const go=()=>{location.href=navTarget(o).url};
+    if(settings.navApp==='mapy'&&o.lat&&!myPos&&navigator.geolocation&&ONWEB){
+      // ještě nemáme polohu: zjisti ji a pak teprve otevři Mapy.com
+      e.preventDefault();toast('Zjišťuji polohu…');startGeo();
+      navigator.geolocation.getCurrentPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude};go()},go,{enableHighAccuracy:false,maximumAge:300000,timeout:5000});
+    }else{b.href=navTarget(o).url}
+    if(!o.lat&&o.street)geocode(o);
+  }
   if(a==='nova')setStatus(o,'nova');
   if(a==='edit')editOrder(o,false);
   if(a==='photo')openSheet(`Účtenka #${o.num}`,`<img class="full" src="${o.photo}" alt="Fotka účtenky">`,'',null);
@@ -644,6 +659,7 @@ $('btnMenu').onclick=()=>{
 // převzetí dat ze staré verze
 try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
 render();
+if(settings.navApp==='mapy')setTimeout(startGeo,1200);
 (async()=>{for(const o of orders.filter(o=>o.street&&!o.geoQ&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
 window.__app={parseReceipt,prepImage};
 }
