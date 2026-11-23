@@ -187,7 +187,7 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-23.4';
+const APP_VERSION='2026-11-23.5';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -271,7 +271,7 @@ function detectPay(t){t=t.toLowerCase();
   return '';
 }
 function parseReceipt(text){
-  const L=text.replace(/\r/g,'').split('\n').map(l=>l.replace(/[ \t]+/g,' ').replace(/^[|—–>«»\s]+|[|\s]+$/g,'').trim()).filter(Boolean);
+  const L=text.replace(/\r/g,'').split('\n').map(l=>l.replace(/[ \t]+/g,' ').replace(/^[^\p{L}\d+#]+/u,'').replace(/[|\s]+$/g,'').trim()).filter(Boolean);
   const o={num:'',street:'',city:'',name:'',phone:'',total:'',collect:'',pay:'',note:'',deliverAt:'',deliverDate:'',items:[]};
   // číslo objednávky = samotné krátké číslo na řádku (Speedlo ho tiskne nahoru i k adrese)
   const numIdx=L.map((l,i)=>/^\D{0,2}\d{1,4}\D{0,1}$/.test(l)?i:-1).filter(i=>i>=0);
@@ -311,7 +311,11 @@ function parseReceipt(text){
   // částky
   const vy=L.find(l=>/vybrat/i.test(l));
   const va=vy?amountIn(vy):null;
-  const ce=L.find(l=>/^celkem\b/i.test(l)&&amountIn(l)!=null);
+  let ce=null;
+  for(let i=0;i<L.length&&!ce;i++)if(/^celkem\b/i.test(L[i])){
+    if(amountIn(L[i])!=null)ce=L[i];
+    else if(L[i+1]&&/^[\d\s.,]+\s*(kč|kc|czk)\.?$/i.test(L[i+1]))ce=L[i+1]; // částka spadla na další řádek
+  }
   const hl=L.find(l=>/^(hotov|kart)/i.test(l)&&amountIn(l)!=null);
   o.total=ce?String(amountIn(ce)):hl?String(amountIn(hl)):va!=null?String(va):'';
   if(va!=null){o.collect=String(va);if(va===0&&!o.pay)o.pay='zaplaceno'}
@@ -332,32 +336,43 @@ const itemsToText=items=>items.map(it=>`${it.q}x ${it.name}`+it.ex.map(e=>`\n+ $
 
 /* ================= fotka → ořez účtenky, zvětšení, kontrast ================= */
 function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('fotku se nepodařilo otevřít'));im.src=u})}
-async function prepImage(src){
+// najde svislý pruh účtenky: světlé sloupce, ve kterých je text (ne jen bílá zeď/stůl)
+function findPaper(im){
+  const W=im.naturalWidth,H=im.naturalHeight,sw=300,sh=Math.max(1,Math.round(H*sw/W));
+  const c=document.createElement('canvas');c.width=sw;c.height=sh;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(im,0,0,sw,sh);
+  const d=x.getImageData(0,0,sw,sh).data,mean=new Float32Array(sw),ink=new Float32Array(sw);
+  for(let X=0;X<sw;X++){let s=0;const col=[];for(let Y=0;Y<sh;Y++){const k=(Y*sw+X)*4,g=.299*d[k]+.587*d[k+1]+.114*d[k+2];s+=g;col.push(g)}
+    mean[X]=s/sh;let n=0;for(let Y=1;Y<sh;Y++)if(Math.abs(col[Y]-col[Y-1])>40)n++;ink[X]=n/sh}
+  const srt=[...mean].sort((a,b)=>a-b),hi=srt[Math.floor(sw*.9)],lo=srt[Math.floor(sw*.2)];
+  if(hi-lo<35)return null;                    // pozadí stejně světlé jako papír → neřež
+  const thr=lo+(hi-lo)*.45;let best=null,st=-1;
+  for(let X=0;X<=sw;X++){const on=X<sw&&mean[X]>thr;if(on&&st<0)st=X;
+    if(!on&&st>=0){let t=0;for(let i=st;i<X;i++)t+=ink[i];if(!best||t>best.t)best={a:st,b:X,t};st=-1}}
+  if(!best||(best.b-best.a)<sw*.28||(best.b-best.a)>sw*.93)return null;
+  return {x0:Math.max(0,Math.floor(best.a*W/sw)-W*.02),x1:Math.min(W,Math.ceil(best.b*W/sw)+W*.02)};
+}
+// mode: 'crop' | 'full' | 'rot' (otočit o 90°)
+async function prepImage(src,mode='crop'){
   const im=src instanceof HTMLImageElement?src:await loadImg(src);
   const W=im.naturalWidth,H=im.naturalHeight;
-  // 1) najdi světlý pruh papíru (sloupce)
-  const sw=400,sh=Math.round(H*sw/W),sc=document.createElement('canvas');sc.width=sw;sc.height=sh;
-  const sx=sc.getContext('2d',{willReadFrequently:true});sx.drawImage(im,0,0,sw,sh);
-  const sd=sx.getImageData(0,0,sw,sh).data,cm=new Float32Array(sw);
-  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const k=(y*sw+x)*4;cm[x]+=(.299*sd[k]+.587*sd[k+1]+.114*sd[k+2])/sh}
-  const sorted=[...cm].sort((a,b)=>a-b),lo=sorted.slice(0,Math.floor(sw*.3)).reduce((a,b)=>a+b,0)/Math.floor(sw*.3);
-  const thr=(sorted[sw-1]+lo)/2;let best=[0,0,sw],st=-1;
-  for(let x=0;x<=sw;x++){const on=x<sw&&cm[x]>thr;if(on&&st<0)st=x;if(!on&&st>=0){if(x-st>best[0])best=[x-st,st,x];st=-1}}
   let x0=0,x1=W;
-  if(best[0]>sw*.2&&best[0]<sw*.95&&sorted[sw-1]-lo>40){x0=Math.max(0,Math.floor(best[1]*W/sw)-12);x1=Math.min(W,Math.ceil(best[2]*W/sw)+12)}
-  // 2) zvětši ořez na šířku ~1600 px (max 9 Mpx)
-  const cw=x1-x0;let f=1600/cw;if(cw*f*H*f>9e6)f=Math.sqrt(9e6/(cw*H));
-  const c=document.createElement('canvas');c.width=Math.round(cw*f);c.height=Math.round(H*f);
-  const x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingQuality='high';x.drawImage(im,x0,0,cw,H,0,0,c.width,c.height);
-  // náhled pro uložení
-  const t=document.createElement('canvas'),ts=Math.min(1,1100/c.height);t.width=Math.round(c.width*ts);t.height=Math.round(c.height*ts);
-  t.getContext('2d').drawImage(c,0,0,t.width,t.height);const thumb=t.toDataURL('image/jpeg',.6);
-  // 3) šedá + kontrast
-  const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  if(mode==='crop'){const r=findPaper(im);if(r){x0=r.x0;x1=r.x1}}
+  const cw=x1-x0,rot=mode==='rot';
+  const tw=rot?H:cw,th=rot?cw:H;               // rozměry výsledku
+  let f=(mode==='crop'&&cw<W?1600:2000)/tw;if(tw*f*th*f>9e6)f=Math.sqrt(9e6/(tw*th));if(f>2.5)f=2.5;
+  const c=document.createElement('canvas');c.width=Math.round(tw*f);c.height=Math.round(th*f);
+  const x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingQuality='high';
+  if(rot){x.translate(c.width,0);x.rotate(Math.PI/2);x.drawImage(im,x0,0,cw,H,0,0,c.height,c.width)}
+  else x.drawImage(im,x0,0,cw,H,0,0,c.width,c.height);
+  const dd=x.getImageData(0,0,c.width,c.height),p=dd.data;
   for(let i=0;i<p.length;i+=4){let g=.299*p[i]+.587*p[i+1]+.114*p[i+2];g=Math.max(0,Math.min(255,(g-128)*1.5+140));p[i]=p[i+1]=p[i+2]=g}
-  x.putImageData(d,0,0);
-  return {canvas:c,thumb};
+  x.putImageData(dd,0,0);
+  // náhled vždy z celé fotky
+  const t=document.createElement('canvas'),ts=Math.min(1,1100/Math.max(W,H));t.width=Math.round(W*ts);t.height=Math.round(H*ts);
+  t.getContext('2d').drawImage(im,0,0,t.width,t.height);
+  return {canvas:c,thumb:t.toDataURL('image/jpeg',.6),cropped:x1-x0<W,im};
 }
+const quality=o=>(o.street?2:0)+(o.phone?2:0)+(o.collect!==''?1:0)+(o.name?1:0)+(o.deliverAt?1:0);
 
 /* ================= OCR (předehřeje se hned po spuštění) ================= */
 let workerP=null,progCb=()=>{};
@@ -468,11 +483,23 @@ async function handleFile(file){
   if(!file||busy)return;busy=true;const o=blank();
   openSheet('Čtu účtenku',`<div id="scanPrev"></div><div class="prog"><i id="pb"></i></div><p class="status" id="ps">Připravuji fotku…</p>`,'',null);
   try{
-    const {canvas,thumb}=await prepImage(file);o.photo=thumb;
-    $('scanPrev').innerHTML=`<img class="prev" src="${thumb}" alt="Fotka účtenky">`;
-    progCb=m=>{const pb=$('pb'),ps=$('ps');if(!pb)return;ps.textContent=STAT[m.status]||'Pracuji…';
+    const first=await prepImage(file,'crop');o.photo=first.thumb;
+    $('scanPrev').innerHTML=`<img class="prev" src="${first.thumb}" alt="Fotka účtenky">`;
+    let label='Čtu účtenku…';
+    progCb=m=>{const pb=$('pb'),ps=$('ps');if(!pb)return;ps.textContent=m.status==='recognizing text'?label:(STAT[m.status]||'Pracuji…');
       pb.style.width=(m.status==='recognizing text'?20+m.progress*80:Math.min(18,(m.progress||0)*18))+'%'};
-    const text=await ocr(canvas);o.raw=text;Object.assign(o,parseReceipt(text));geocode(o);
+    // 1) ořez → 2) celá fotka → 3) otočená fotka; bere nejlepší výsledek
+    let best=null;
+    const attempts=[['crop',first],['full',null],['rot',null]];
+    for(const [mode,pre] of attempts){
+      if(mode==='full'&&!first.cropped)continue;
+      if(best&&best.parsed.street&&best.parsed.phone&&best.parsed.collect!=='')break; // vše důležité máme
+      if(mode!=='crop')label=mode==='full'?'Zkouším celou fotku…':'Zkouším otočit fotku…';
+      const r=pre||await prepImage(first.im,mode);
+      const text=await ocr(r.canvas),parsed=parseReceipt(text),q=quality(parsed);
+      if(!best||q>best.q)best={q,text,parsed};
+    }
+    o.raw=best.text;Object.assign(o,best.parsed);geocode(o);
     const dup=o.num&&orders.find(x=>x.num===o.num&&x.status!=='dorucena');
     const miss=['street','phone','collect'].filter(k=>!o[k]).map(k=>({street:'adresu',phone:'telefon',collect:'částku'}[k]));
     if(!o.num)o.num=String(nextNum());
