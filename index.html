@@ -186,6 +186,24 @@ a.dr{color:var(--ink)}
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
 <script>
 {
+/* ================= verze + automatická aktualizace ================= */
+const APP_VERSION='2026-11-23.4';
+let updChecked=0;
+async function checkUpdate(){
+  if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
+  try{
+    const t=await (await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'})).text();
+    const m=t.match(/APP_VERSION='([^']+)'/);
+    if(m&&m[1]!==APP_VERSION&&!document.querySelector('.sheet.on')){
+      try{sessionStorage.setItem('martini.updated',m[1])}catch(e){}
+      location.replace(location.pathname+'?v='+encodeURIComponent(m[1]));
+    }
+  }catch(e){}
+}
+// adresa zůstává vždy stejná (odstraní ?v=… po aktualizaci)
+if(location.search&&history.replaceState)history.replaceState(null,'',location.pathname+location.hash);
+checkUpdate();window.__ver=APP_VERSION;window.__upd=()=>{updChecked=0;return checkUpdate()};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
 /* ================= ikony a pomocníci ================= */
 const P={
   nav:'<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
@@ -644,6 +662,7 @@ $('btnMenu').onclick=()=>{
   <p class="hint">Tlačítko Navigace rovnou spustí trasu v této aplikaci.</p>
   <label class="fld"><span>Výchozí obec</span><input id="sCity" value="${esc(settings.city)}" placeholder="např. Dobříš"></label>
   <p class="hint">Doplní se k adrese, když na účtence obec chybí.</p>
+  <p class="hint" style="margin-top:10px">Verze appky: ${APP_VERSION}</p>
   <button class="btn danger" id="sReset" style="margin-top:14px">${ic('trash')}Ukončit směnu a smazat vše</button>`,'Hotovo',()=>{
     settings.city=$('sCity').value.trim();saveSettings();render();closeSheet();
   });
@@ -659,6 +678,7 @@ $('btnMenu').onclick=()=>{
 // převzetí dat ze staré verze
 try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
 render();
+try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast('Appka aktualizována'),400)}}catch(e){}
 if(settings.navApp==='mapy')setTimeout(startGeo,1200);
 (async()=>{for(const o of orders.filter(o=>o.street&&!o.geoQ&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
 window.__app={parseReceipt,prepImage};
