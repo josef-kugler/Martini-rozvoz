@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Martini">
-<meta name="theme-color" content="#0B0E17">
+<meta name="theme-color" content="#F4F4F6">
 <title>Martini rozvoz</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E84C2B'/%3E%3Cpath d='M12 22h24l8 10h8v10H12z' fill='white'/%3E%3Ccircle cx='22' cy='44' r='5' fill='%23E84C2B' stroke='white' stroke-width='3'/%3E%3Ccircle cx='44' cy='44' r='5' fill='%23E84C2B' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23E84C2B'/%3E%3Cpath d='M36 64h66l24 28h20v28H36z' fill='white'/%3E%3Ccircle cx='62' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3Ccircle cx='124' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3C/svg%3E">
@@ -51,13 +51,13 @@ button:active,a:active{transform:scale(.97);transition:transform .1s}
 /* záložky */
 .tabs{display:flex;align-items:center;gap:6px;background:var(--top);padding:4px 10px 8px;position:sticky;top:calc(env(safe-area-inset-top) + 58px);z-index:19}
 .tabs .tb{height:34px;padding:0 11px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted);background:var(--card);white-space:nowrap}
-.tabs .tb.on{background:var(--ink);color:#0B0E17}
+.tabs .tb.on{background:var(--ink);color:var(--bg)}
 .tabs .route{display:flex;align-items:center;justify-content:center;gap:4px;height:34px;width:34px;padding:0;border-radius:999px;color:var(--muted);font-weight:600;font-size:15px;background:var(--card)}
 .tabs .route svg{width:17px;height:17px}
 .tabs .route.on{color:#fff;background:var(--red)}
 .sum{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:15px;white-space:nowrap;flex:none}
-.sum b{color:#7CDB7B;font-weight:700}
-.sum svg{width:19px;height:19px;color:#7CDB7B}
+.sum b{color:var(--money);font-weight:700}
+.sum svg{width:19px;height:19px;color:var(--money)}
 @media(max-width:370px){.tabs .tb{padding:0 9px}.tabs{gap:4px;padding-left:8px;padding-right:8px}.sum svg{display:none}}
 @media(max-width:330px){.tabs .tb{font-size:13px;padding:0 8px}.sum{font-size:14px}}
 main{max-width:640px;margin:0 auto;padding-top:2px}
@@ -136,11 +136,11 @@ a.dr{color:var(--ink)}
 .btn[disabled]{opacity:.4}
 
 /* mapa */
-#mapWrap{display:none;position:relative;height:calc(100dvh - env(safe-area-inset-top) - 112px);margin:0 8px;border-radius:22px;overflow:hidden;background:#141826}
+#mapWrap{display:none;position:relative;height:calc(100dvh - env(safe-area-inset-top) - 112px);margin:0 8px;border-radius:22px;overflow:hidden;background:var(--card2)}
 #mapWrap.on{display:block}
 #map{position:absolute;inset:0}
-.leaflet-container{background:#141826;font:inherit}
-#map:not(.esri) .leaflet-tile-pane{filter:invert(1) hue-rotate(185deg) brightness(.82) contrast(.9) saturate(.35)}
+.leaflet-container{background:var(--card2);font:inherit}
+:root:not([data-theme=light]) #map:not(.esri) .leaflet-tile-pane{filter:invert(1) hue-rotate(185deg) brightness(.82) contrast(.9) saturate(.35)}
 .leaflet-control-attribution{background:rgba(11,14,23,.7)!important;color:#8E93AB!important;font-size:10px}
 .leaflet-control-attribution a{color:#B5B9CC!important}
 .leaflet-bar a{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
@@ -149,7 +149,7 @@ a.dr{color:var(--ink)}
 .mk.me{width:22px;height:22px;background:#4AA8FF;border-width:4px;box-shadow:0 0 0 8px rgba(74,168,255,.25)}
 .mk.piz{width:38px;height:38px;background:#fff;color:var(--red);border-color:var(--red)}
 .mk.piz svg{width:20px;height:20px}
-.mapcard{position:absolute;left:10px;right:10px;bottom:10px;z-index:500;background:rgba(22,26,39,.96);border-radius:22px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.mapcard{position:absolute;left:10px;right:10px;bottom:10px;z-index:500;background:var(--glass);border-radius:22px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
 .mapcard .big{font:900 34px/1 var(--head);letter-spacing:-.01em}
 .mapcard .lbl2{color:var(--muted);font-size:14px;margin:4px 0 12px}
 .mapcard .row{display:flex;gap:8px}
@@ -159,7 +159,7 @@ a.dr{color:var(--ink)}
 /* boční menu */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;opacity:0;pointer-events:none;transition:opacity .3s}
 .ov.on{opacity:1;pointer-events:auto}
-.drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,380px);z-index:45;background:#121624;transform:translateX(-102%);transition:transform .35s var(--ease);overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) 0 calc(20px + env(safe-area-inset-bottom))}
+.drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,380px);z-index:45;background:var(--drawer);transform:translateX(-102%);transition:transform .35s var(--ease);overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) 0 calc(20px + env(safe-area-inset-bottom))}
 .drawer.on{transform:none}
 .promo{width:calc(100% - 32px);text-align:left;color:#fff;margin:4px 16px 10px;border-radius:18px;padding:16px 18px;background:linear-gradient(120deg,#7A1E12,#E8402B);font-weight:700;font-size:18px;line-height:1.25;display:flex;align-items:center;gap:12px}
 .promo small{display:block;font-weight:500;font-size:14px;opacity:.85;margin-top:2px}
@@ -167,7 +167,7 @@ a.dr{color:var(--ink)}
 .mi svg{width:28px;height:28px;color:var(--ink)}
 .mi .t{flex:1;display:flex;flex-direction:column;border-bottom:1px solid var(--line);min-height:68px;justify-content:center}
 .mi .t small{font-size:16px;color:var(--muted)}
-.mi .t small.on{color:#7CDB7B}
+.mi .t small.on{color:var(--money)}
 .mi:last-child .t{border:0}
 
 /* stránky z menu */
@@ -175,7 +175,7 @@ a.dr{color:var(--ink)}
 .page.on{transform:none;visibility:visible;transition:transform .35s var(--ease)}
 .phead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:var(--bg)}
 .phead .ttl{font:900 22px/1 var(--head);opacity:0;transition:opacity .2s}
-.page.scrolled .phead{background:#151927}
+.page.scrolled .phead{background:var(--head2)}
 .page.scrolled .phead .ttl{opacity:1}
 .pbody{padding:6px 20px 0;max-width:640px;margin:0 auto}
 .h1{font:900 42px/1.05 var(--head);letter-spacing:-.015em;margin:4px 0 18px}
@@ -198,7 +198,7 @@ a.dr{color:var(--ink)}
 .gauge{display:block;margin:6px auto 0;width:220px;height:130px}
 .ring{display:block;margin:6px auto 0;width:190px;height:190px}
 .bars{display:flex;align-items:flex-end;gap:5px;height:120px;padding:10px 0 0}
-.bars i{flex:1;background:#2B3146;border-radius:6px 6px 3px 3px;min-height:6px;position:relative}
+.bars i{flex:1;background:var(--track);border-radius:6px 6px 3px 3px;min-height:6px;position:relative}
 .bars i.hot{background:var(--red)}
 .bars i span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);font-style:normal}
 .tx{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
@@ -206,7 +206,7 @@ a.dr{color:var(--ink)}
 .tx .a b{display:block;font-size:18px;font-weight:700}
 .tx .a span{display:block;color:var(--muted);font-size:15px}
 .tx .v{font-size:18px;font-weight:600;white-space:nowrap}
-.tx .v.plus{color:#7CDB7B}
+.tx .v.plus{color:var(--money)}
 .dayh{font:900 22px/1.2 var(--head);margin:22px 0 4px}
 .srow{display:flex;align-items:center;gap:14px;min-height:66px;border-bottom:1px solid var(--line);width:100%;text-align:left;font-size:19px}
 .srow .t{flex:1}
@@ -216,6 +216,28 @@ a.dr{color:var(--ink)}
 .prof .lab{color:var(--muted);font-size:16px;margin-top:18px}
 .prof .val{font-size:22px}
 
+/* světlý vzhled */
+:root{--track:#2B3146;--money:#7CDB7B;--sheet:#121624;--drawer:#121624;--glass:rgba(22,26,39,.96);--head2:#151927}
+:root[data-theme=light]{color-scheme:light;--bg:#F4F4F6;--card:#FFFFFF;--card2:#ECEEF3;--top:#F4F4F6;--line:rgba(0,0,0,.08);--field:#D3D7E0;--soft:rgba(0,0,0,.05);
+  --ink:#14161F;--muted:#62677D;--faint:#A9AEC0;--red-ink:#C7321F;--track:#E1E4EB;--money:#1E7A1D;--sheet:#FFFFFF;--drawer:#FFFFFF;--glass:rgba(255,255,255,.97);--head2:#FFFFFF}
+:root[data-theme=light] .card{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+:root[data-theme=light] .toast{background:#14161F;color:#fff}
+:root[data-theme=light] .toast button{color:#FF8A75}
+:root[data-theme=light] .mk{box-shadow:0 2px 6px rgba(0,0,0,.25)}
+:root.calm *{transition:none!important;animation:none!important}
+.ver{padding:18px 20px 6px;color:var(--muted);font-size:15px}
+.promo .promo-ic{width:46px;height:46px;margin-left:auto;opacity:.9;stroke-width:1.6}
+.srow{display:flex;align-items:center;gap:16px;background:none;color:var(--ink)}
+.srow>svg.i:first-child{width:26px;height:26px}
+.srow.ck svg.i{color:var(--red-ink);width:24px;height:24px}
+.srow .val{white-space:nowrap}
+.sw{width:56px;height:34px;border-radius:999px;background:var(--track);position:relative;flex:none;transition:background .25s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .25s var(--ease)}
+.sw.on{background:var(--red)}
+.sw.on::after{transform:translateX(22px)}
+.seg-s button{font-size:14px;height:40px;white-space:nowrap}
+.kv2{display:flex;justify-content:space-between;gap:12px;padding:18px 0;border-bottom:1px solid var(--line);font-size:19px}
+.kv2 b{font-weight:500;color:var(--muted);white-space:nowrap}
 /* hodnocení */
 .fb{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) 20px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden}
 .fb.on{transform:none;visibility:visible;transition:transform .4s var(--ease)}
@@ -226,12 +248,12 @@ a.dr{color:var(--ink)}
 .stars svg{width:50px;height:50px;stroke-width:1.8}
 .stars button.on svg{fill:var(--red-ink)}
 .starl{display:flex;justify-content:space-between;color:var(--muted);font-size:15px}
-.fb textarea{margin-top:34px;width:100%;min-height:64px;border-radius:999px;border:2px solid #33395A;background:transparent;padding:18px 24px;font-size:18px;resize:none;outline:none}
+.fb textarea{margin-top:34px;width:100%;min-height:64px;border-radius:999px;border:2px solid var(--field);background:transparent;padding:18px 24px;font-size:18px;resize:none;outline:none}
 .fb textarea:focus{border-color:var(--red)}
 .fb .grow{flex:1}
 
 /* sheet (formuláře) */
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:55;max-height:92dvh;display:flex;flex-direction:column;background:#121624;border-radius:26px 26px 0 0;
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:55;max-height:92dvh;display:flex;flex-direction:column;background:var(--sheet);border-radius:26px 26px 0 0;
   transform:translateY(105%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden;box-shadow:0 -8px 32px rgba(0,0,0,.4);max-width:640px;margin:0 auto}
 .sheet.on{transform:none;visibility:visible;transition:transform .4s var(--ease)}
 #ov{z-index:54}
@@ -249,7 +271,7 @@ a.dr{color:var(--ink)}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .seg{display:flex;background:var(--card);border-radius:999px;padding:3px}
 .seg button{flex:1;height:40px;border-radius:999px;font-size:15px;font-weight:600;color:var(--muted)}
-.seg button.on{background:var(--ink);color:#0B0E17}
+.seg button.on{background:var(--ink);color:var(--bg)}
 .hint{font-size:13px;color:var(--muted);margin:-6px 4px 12px}
 .prev{display:block;width:100%;max-height:220px;object-fit:contain;border-radius:16px;background:var(--card);margin-bottom:12px}
 .prog{height:10px;border-radius:9px;background:var(--card);overflow:hidden;margin:6px 0 8px}
@@ -309,7 +331,7 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-24.4';
+const APP_VERSION='2026-11-24.7';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -348,6 +370,9 @@ const P={
   info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
   alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
   star:'<polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/>',
+  car:'<path d="M5 17H3v-5l2-5h11l3 5h2v5h-2"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M9.5 17h5M4 12h17"/>',
+  chart:'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/>',
+  play:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/>',
   bill:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
   ccard:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
   money:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
@@ -366,7 +391,7 @@ const kc=n=>(Math.round((+n||0)*100)/100).toLocaleString('cs-CZ')+' Kč';
 
 /* ================= úložiště ================= */
 const KEY='martini.orders.v2', SKEY='martini.settings.v3';
-let orders=[], settings={city:'Dobříš',navApp:'mapy',sort:'time'}, tab='A';
+let orders=[], settings={city:'Dobříš',navApp:'mapy',sort:'time',theme:'light'}, tab='A';
 const opened=new Set();
 try{orders=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
 try{Object.assign(settings,JSON.parse(localStorage.getItem(SKEY)||'{}'))}catch(e){}
@@ -658,7 +683,7 @@ function editOrder(o,isNew,warn){
     readForm(d);
     if(!d.street&&!d.phone){$('fStreet').style.borderColor='var(--red)';$('fStreet').focus();toast('Doplň adresu nebo telefon');return}
     let tgt=d;if(isNew){orders.push(d);if(!settings.shiftStart){settings.shiftStart=Date.now();saveSettings()}}else{Object.assign(o,d);tgt=o}
-    save();render();closeSheet();toast(isNew?`#${d.num} přidána`:'Uloženo');
+    save();render();closeSheet();if(isNew)beep(988);toast(isNew?`#${d.num} přidána`:'Uloženo');
     geocode(tgt);
   });
   bindForm(d);
@@ -714,10 +739,24 @@ document.addEventListener('click',e=>{
 /* ================= navigace – rovnou spustí trasu ================= */
 // aktuální poloha kurýra = start trasy (Mapy.com bez startu navigaci nespustí)
 let myPos=null,geoOn=false;
+// přesná GPS poloha, průběžně; horší (méně přesný) údaj nepřepíše čerstvý přesný
+let geoErr='';
+function onPos(p){
+  const c=p.coords,np={lat:c.latitude,lon:c.longitude,acc:Math.round(c.accuracy||0),t:Date.now()};
+  if(myPos&&myPos.acc&&np.acc>myPos.acc*3&&np.acc>100&&Date.now()-myPos.t<20000)return;
+  myPos=np;geoErr='';
+  if(tab==='M')updateMe();
+  if((settings.sort==='route'||tab==='M')&&(!routePos||hav(routePos,myPos)>150))scheduleRoute();
+}
 function startGeo(){
   if(geoOn||!ONWEB||!navigator.geolocation)return;geoOn=true;
-  navigator.geolocation.watchPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude};if(tab==='M')updateMe();if((settings.sort==='route'||tab==='M')&&(!routePos||hav(routePos,myPos)>300))scheduleRoute()},()=>{geoOn=false},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
+  navigator.geolocation.watchPosition(onPos,e=>{geoOn=false;geoErr=e&&e.code===1?'denied':'fail';if(tab==='M')updateMe()},{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
 }
+function freshPos(){ // jednorázově hned přesnou polohu (při otevření mapy / navigaci)
+  if(!ONWEB||!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(onPos,()=>{},{enableHighAccuracy:true,maximumAge:0,timeout:15000});
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){geoOn=false;startGeo();freshPos()}});
 const fx=n=>(+n).toFixed(6);
 
 /* ================= trasa: nejlepší pořadí zastávek ================= */
@@ -844,7 +883,7 @@ function cardHtml(o){
 }
 function setStatus(o,to){
   const prev=o.status;o.status=to;if(to==='dorucena')o.done=Date.now();
-  if(navigator.vibrate)navigator.vibrate(12);
+  beep(to==='dorucena'?1046:to==='jedu'?784:523);
   save();render();
   toast(to==='jedu'?`#${o.num} vyzvednuta`:to==='dorucena'?`#${o.num} doručena`:`#${o.num} vrácena`,()=>{o.status=prev;save();render()});
 }
@@ -858,7 +897,7 @@ $('list').addEventListener('click',e=>{
     if(settings.navApp==='mapy'&&o.lat&&!myPos&&navigator.geolocation&&ONWEB){
       // ještě nemáme polohu: zjisti ji a pak teprve otevři Mapy.com
       e.preventDefault();toast('Zjišťuji polohu…');startGeo();
-      navigator.geolocation.getCurrentPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude};go()},go,{enableHighAccuracy:false,maximumAge:300000,timeout:5000});
+      navigator.geolocation.getCurrentPosition(p=>{onPos(p);go()},go,{enableHighAccuracy:true,maximumAge:10000,timeout:6000});
     }else{b.href=navTarget(o).url}
     if(!o.lat&&o.street)geocode(o);
   }
@@ -930,7 +969,7 @@ function render(){
 }
 $('btnRoute').onclick=()=>{settings.sort=settings.sort==='route'?'time':'route';saveSettings();routeKey='';if(settings.sort==='route'){startGeo();route=null}render();toast(settings.sort==='route'?'Řadím podle trasy':'Řadím podle času doručení')};
 $('tabA').onclick=()=>{tab='A';render()};$('tabD').onclick=()=>{tab='D';render()};
-$('tabM').onclick=()=>{tab='M';startGeo();routeKey='';render();computeRoute()};
+$('tabM').onclick=()=>{tab='M';startGeo();freshPos();routeKey='';render();computeRoute()};
 setInterval(render,30000);
 
 /* ================= mapa s trasou ================= */
@@ -949,7 +988,20 @@ async function routeLine(pts){ // geometrie trasy po silnicích (OSRM), jinak ro
   geoCache2.set(key,line);return line;
 }
 const pin=(cls,html,sz)=>L.divIcon({className:'',html:`<div class="mk ${cls}">${html}</div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
-function updateMe(){if(map&&myPos){if(!meMarker)meMarker=L.marker([myPos.lat,myPos.lon],{icon:pin('me','',22),zIndexOffset:1000}).addTo(map);else meMarker.setLatLng([myPos.lat,myPos.lon])}}
+let accCircle=null;
+function updateMe(){
+  if(!map)return;
+  if(myPos){
+    const ll=[myPos.lat,myPos.lon];
+    if(!meMarker)meMarker=L.marker(ll,{icon:pin('me','',22),zIndexOffset:1000}).addTo(map);else meMarker.setLatLng(ll);
+    if(!accCircle)accCircle=L.circle(ll,{radius:myPos.acc||0,color:'#4AA8FF',weight:1,fillColor:'#4AA8FF',fillOpacity:.12,interactive:false}).addTo(map);
+    else{accCircle.setLatLng(ll);accCircle.setRadius(myPos.acc||0)}
+  }
+  const g=$('geoNote');if(g){
+    g.textContent=geoErr==='denied'?'Poloha je zakázaná – povol ji v Nastavení iPhonu.':!myPos?'Zjišťuji polohu…':myPos.acc>100?`Poloha je nepřesná (± ${myPos.acc} m) – zapni Přesnou polohu.`:`Poloha ± ${myPos.acc} m`;
+    g.style.color=geoErr||(myPos&&myPos.acc>100)?'#FFC46B':'';
+  }
+}
 async function renderMap(){
   const msg=$('mapMsg'),card=$('mapCard');
   if(!window.L){msg.hidden=false;msg.innerHTML='Mapa se nenačetla – zkontroluj připojení.';card.hidden=true;return}
@@ -964,7 +1016,6 @@ async function renderMap(){
     mapLayers=L.layerGroup().addTo(map);
   }
   setTimeout(()=>map.invalidateSize(),50);
-  updateMe();
   const act=orders.filter(o=>o.status!=='dorucena');
   mapLayers.clearLayers();
   L.marker([PIZZERIA.lat,PIZZERIA.lon],{icon:pin('piz',ic('store'),38)}).addTo(mapLayers).bindPopup('Pizzeria Martini');
@@ -983,11 +1034,13 @@ async function renderMap(){
   card.hidden=false;
   card.innerHTML=route?`<div class="big">${route.ids.length} ${route.ids.length===1?'zastávka':route.ids.length<5?'zastávky':'zastávek'}</div>
     <div class="lbl2">Konec ≈ ${hhmm(route.end)} · start z ${route.from}${cash?` · hotově ${kc(cash)}`:''}${act.length>geo.length?` · ${act.length-geo.length} bez polohy`:''}</div>
+    <div class="lbl2" id="geoNote" style="margin-top:-6px"></div>
     <div class="row"><a class="btn pri" href="${first?esc(navTarget(first).url):'#'}" rel="noopener">${ic('nav')}Jet na #${esc(first?first.num:'')}</a><button class="btn" id="mapFit" style="width:auto;padding:0 18px" aria-label="Zobrazit celou trasu">${ic('route')}</button></div>`
     :`<div class="big">Počítám trasu…</div><div class="lbl2">${geo.length?'Hledám nejlepší pořadí zastávek.':'Dohledávám polohy adres.'}</div>`;
   const fitAll=()=>{const b=L.latLngBounds([[start.lat,start.lon],...geo.map(o=>[o.lat,o.lon])]);map.fitBounds(b,{paddingTopLeft:[30,30],paddingBottomRight:[30,190],maxZoom:16})};
   const fk=pts.map(p=>p.lat+','+p.lon).join(';');if(fk!==lastFit){lastFit=fk;fitAll()}
   if($('mapFit'))$('mapFit').onclick=fitAll;
+  updateMe();
   if(route&&pts.length>1){
     const line=await routeLine(pts);
     if(tab==='M'){L.polyline(line,{color:'#fff',weight:6,opacity:.95}).addTo(mapLayers);L.polyline(line,{color:'#E8402B',weight:2,opacity:.9,dashArray:'1 9'}).addTo(mapLayers)}
@@ -998,45 +1051,7 @@ async function renderMap(){
 const SHKEY='martini.shifts.v1';
 let shifts=[];try{shifts=JSON.parse(localStorage.getItem(SHKEY)||'[]')}catch(e){}
 const saveShifts=()=>{try{localStorage.setItem(SHKEY,JSON.stringify(shifts))}catch(e){}};
-function openDrawer(){
-  const sh=settings.shiftStart;
-  $('drawer').innerHTML=`
-  <button class="promo" data-p="prehled">${ic('trend')}<span>Dnes doručeno ${orders.filter(o=>o.status==='dorucena').length}<small>Hotovost k odevzdání ${kc(cashDone())}</small></span></button>
-  <button class="mi" data-p="profil">${ic('user')}<span class="t">${esc(settings.name||'Kurýr Martini')}<small class="${sh?'on':''}">${sh?'Ve směně':'Mimo směnu'}</small></span></button>
-  <button class="mi" data-p="prehled">${ic('trend')}<span class="t">Můj přehled</span></button>
-  <button class="mi" data-p="finance">${ic('bag')}<span class="t">Finance</span></button>
-  <button class="mi" data-p="smeny">${ic('cal')}<span class="t">Směny</span></button>
-  <button class="mi" data-p="nastaveni">${ic('gear')}<span class="t">Nastavení</span></button>
-  <button class="mi" data-p="feedback">${ic('chat')}<span class="t">Zpětná vazba</span></button>
-  <button class="mi" data-p="info">${ic('help')}<span class="t">Jak appka funguje<small>Verze ${APP_VERSION}</small></span></button>`;
-  $('drawer').classList.add('on');$('ovD').classList.add('on');
-}
-function closeDrawer(){$('drawer').classList.remove('on');$('ovD').classList.remove('on')}
-$('btnMenu').onclick=openDrawer;$('ovD').onclick=closeDrawer;
-$('drawer').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;closeDrawer();const p=b.dataset.p;if(p==='feedback')openFb();else openPage(p)};
-const cashDone=()=>orders.filter(o=>o.status==='dorucena'&&o.pay==='hotove').reduce((s,o)=>s+(+o.collect||0),0);
-const czDay=t=>new Date(t).toLocaleDateString('cs-CZ',{day:'numeric',month:'long'});
-const dur=ms=>{const m=Math.max(0,Math.round(ms/60000));return m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`};
-let curPage='';
-function openPage(p){
-  curPage=p;const ttl={profil:'Profil',prehled:'Můj přehled',finance:'Finance',smeny:'Směny',nastaveni:'Nastavení',info:'Jak appka funguje'}[p];
-  $('pTtl').textContent=ttl;$('pBody').innerHTML=PAGES[p]();$('page').classList.add('on');$('page').scrollTop=0;$('page').classList.remove('scrolled');
-  (BIND[p]||(()=>{}))();
-}
-function closePage(){$('page').classList.remove('on');curPage='';render()}
-$('pBack').onclick=closePage;
-$('page').addEventListener('scroll',()=>$('page').classList.toggle('scrolled',$('page').scrollTop>60));
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('fb').classList.contains('on'))closeFb();else if($('page').classList.contains('on'))closePage();else closeDrawer()}});
-const done=()=>orders.filter(o=>o.status==='dorucena');
-const PAGES={
-  profil:()=>`<h1 class="h1">Profil</h1><div class="prof">
-    <div class="lab">Jméno kurýra</div><div class="val">${esc(settings.name||'Nenastaveno')}</div>
-    <div class="lab">Rozvážím pro</div><div class="val">Pizzeria Martini, Dobříš</div>
-    <div class="lab">Stav</div><div class="val">${settings.shiftStart?'Ve směně od '+hhmm(settings.shiftStart):'Mimo směnu'}</div>
-    <div class="lab">Odjeté směny</div><div class="val">${shifts.length}</div>
-    <div class="lab">Doručeno celkem</div><div class="val">${shifts.reduce((s,x)=>s+x.count,0)+done().length}</div></div>
-    <h2 class="h2">Účet</h2><p class="note2">Jméno změníš v Nastavení. Data jsou uložená jen v tomhle telefonu.</p>`,
-  prehled:()=>{
+const PAGES_prehled=()=>{
     const d=done(),sh=settings.shiftStart,hrs=sh?Math.max(.25,(Date.now()-sh)/36e5):0,perH=sh?d.length/hrs:0;
     const times=d.filter(o=>o.done&&o.created).map(o=>(o.done-o.created)/60000),avg=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length):0;
     const by=new Array(24).fill(0);d.forEach(o=>{if(o.done)by[new Date(o.done).getHours()]++});
@@ -1048,14 +1063,14 @@ const PAGES={
     <div class="bigcard"><div class="n">${d.length}</div><div class="l">Doručené objednávky</div>${ic('bag').replace('class="i"','class="i deco"')}</div>
     <div class="info">${ic('info')}<span>${d.length?`Vybraná hotovost ${kc(cashDone())}.`:'Zatím žádná doručená objednávka.'}</span></div>
     <h2 class="h2">Doručení za hodinu</h2>
-    <svg class="gauge" viewBox="0 0 220 130"><path d="M20 115 A90 90 0 0 1 200 115" fill="none" stroke="#2B3146" stroke-width="12" stroke-linecap="round"/>${g>0?`<path d="M20 115 A90 90 0 0 1 ${gx.toFixed(1)} ${gy.toFixed(1)}" fill="none" stroke="#E8402B" stroke-width="12" stroke-linecap="round"/>`:''}<text x="110" y="112" text-anchor="middle" fill="#EDEAE5" font-family="Fira Sans" font-weight="900" font-size="46">${perH.toFixed(1).replace('.',',')}</text></svg>
+    <svg class="gauge" viewBox="0 0 220 130"><path d="M20 115 A90 90 0 0 1 200 115" fill="none" style="stroke:var(--track)" stroke-width="12" stroke-linecap="round"/>${g>0?`<path d="M20 115 A90 90 0 0 1 ${gx.toFixed(1)} ${gy.toFixed(1)}" fill="none" stroke="#E8402B" stroke-width="12" stroke-linecap="round"/>`:''}<text x="110" y="112" text-anchor="middle" fill="currentColor" font-family="Fira Sans" font-weight="900" font-size="46">${perH.toFixed(1).replace('.',',')}</text></svg>
     <div class="info">${ic('info')}<span>${sh?`Ve směně ${dur(Date.now()-sh)}.`:'Směna začne s první objednávkou.'}</span></div>
     <h2 class="h2">Průměrná doba doručení</h2>
-    <svg class="ring" viewBox="0 0 190 190"><circle cx="95" cy="95" r="80" fill="none" stroke="#2B3146" stroke-width="10"/>${avg?`<circle cx="95" cy="95" r="80" fill="none" stroke="#E8402B" stroke-width="10" stroke-linecap="round" stroke-dasharray="${Math.min(1,avg/60)*502} 502" transform="rotate(-90 95 95)"/>`:''}<text x="95" y="108" text-anchor="middle" fill="#EDEAE5" font-family="Fira Sans" font-weight="900" font-size="44">${avg}′</text></svg>
+    <svg class="ring" viewBox="0 0 190 190"><circle cx="95" cy="95" r="80" fill="none" style="stroke:var(--track)" stroke-width="10"/>${avg?`<circle cx="95" cy="95" r="80" fill="none" stroke="#E8402B" stroke-width="10" stroke-linecap="round" stroke-dasharray="${Math.min(1,avg/60)*502} 502" transform="rotate(-90 95 95)"/>`:''}<text x="95" y="108" text-anchor="middle" fill="currentColor" font-family="Fira Sans" font-weight="900" font-size="44">${avg}′</text></svg>
     <div class="info${avg>45?' warn2':''}">${ic(avg>45?'alert':'info')}<span>${avg?`Od vyfocení účtenky po doručení průměrně ${avg} min.`:'Ukáže se po prvním doručení.'}</span></div>
     <h2 class="h2">Doručení podle hodin</h2><div class="panel"><div class="bars">${bars.join('')}</div><div style="height:22px"></div></div>`;
-  },
-  finance:()=>{
+  };
+const PAGES_finance=()=>{
     const d=done(),s=p=>d.filter(o=>o.pay===p).reduce((a,o)=>a+(+o.collect||0),0),paid=d.filter(o=>o.pay==='zaplaceno').reduce((a,o)=>a+(+o.total||0),0);
     const pend=orders.filter(o=>o.status!=='dorucena'&&o.pay==='hotove').reduce((a,o)=>a+(+o.collect||0),0);
     const tx=[...d].sort((a,b)=>(b.done||0)-(a.done||0)).map(o=>`<div class="tx"><div class="a"><b>#${esc(o.num)} ${esc(o.street||'')}</b><span>${o.done?hhmm(o.done):''} · ${o.pay==='hotove'?'Hotově':o.pay==='karta'?'Kartou':o.pay==='zaplaceno'?'Zaplaceno online':'Neznámá platba'}</span></div><div class="v ${o.pay==='hotove'?'plus':''}">${o.pay==='zaplaceno'?kc(o.total):'+'+kc(o.collect)}</div></div>`).join('');
@@ -1066,8 +1081,8 @@ const PAGES={
     <div class="kv"><span>Zaplaceno online</span><b>${kc(paid)}</b></div>
     <div class="kv"><span>Tržba celkem</span><b>${kc(s('hotove')+s('karta')+paid)}</b></div></div>
     <h2 class="h1" style="font-size:34px;margin-top:30px">Nedávné transakce</h2>${tx?`<div class="dayh">${czDay(Date.now())}</div>${tx}`:'<p class="note2">Zatím žádná doručená objednávka.</p>'}`;
-  },
-  smeny:()=>{
+  };
+const PAGES_smeny=()=>{
     const sh=settings.shiftStart,d=done();
     const hist=[...shifts].reverse().map(x=>`<div class="tx"><div class="a"><b>${czDay(x.start)}</b><span>${hhmm(x.start)}–${hhmm(x.end)} · ${x.count} doručení</span></div><div class="v plus">${kc(x.cash)}</div></div>`).join('');
     return `<h1 class="h1">Směny</h1>
@@ -1078,40 +1093,171 @@ const PAGES={
     <div class="btns" style="max-width:none;margin-top:16px">${sh?`<button class="btn danger" id="endShift">${ic('trash')}Ukončit směnu</button>`:`<button class="btn pri" id="startShift">Začít směnu</button>`}</div>
     <p class="note2" style="margin-top:10px">Ukončení směny uloží souhrn do historie a vyčistí seznam objednávek.</p>
     <h2 class="h2">Historie směn</h2>${hist||'<p class="note2">Zatím žádná ukončená směna.</p>'}`;
-  },
-  nastaveni:()=>{
-    const apps=['mapy:Mapy.com','google:Google','waze:Waze','apple:Apple'].map(x=>{const [v,l]=x.split(':');return `<button type="button" data-v="${v}" class="${settings.navApp===v?'on':''}">${l}</button>`}).join('');
-    return `<h1 class="h1">Nastavení</h1>
-    <h2 class="h2">Navigace</h2><div class="fld"><span>Navigovat přes</span><div class="seg" id="sNav">${apps}</div></div><p class="hint">Tlačítko Navigace rovnou spustí trasu v této aplikaci.</p>
-    <h2 class="h2">Rozvoz</h2><label class="fld"><span>Výchozí obec</span><input id="sCity" value="${esc(settings.city)}" placeholder="např. Dobříš"></label><p class="hint">Doplní se k adrese, když na účtence obec chybí.</p>
-    <h2 class="h2">Profil</h2><label class="fld"><span>Jméno kurýra</span><input id="sName" value="${esc(settings.name||'')}" placeholder="např. Pepa" autocomplete="name"></label>
-    <h2 class="h2">Zpětná vazba</h2><label class="fld"><span>Posílat hodnocení na e-mail</span><input id="sFb" type="email" inputmode="email" value="${esc(settings.fbEmail||'')}" placeholder="např. jan@seznam.cz"></label><p class="hint">Když je prázdné, hodnocení se jen uloží v telefonu.</p>
-    <p class="note2" style="margin-top:20px">Verze appky: ${APP_VERSION}</p>`;
-  },
-  info:()=>`<h1 class="h1">Jak appka funguje</h1>
+  };
+const PAGES_info=()=>`<h1 class="h1">Informační centrum</h1>
     <div class="srow"><span class="t">Foto<small>Vyfoť účtenku ze Speedla, appka ji přečte a zkontroluješ údaje.</small></span></div>
     <div class="srow"><span class="t">Slider<small>Přetáhni „Vyzvednuta“ a pak „Doručena“. Ukliknutí vrátíš tlačítkem Zpět.</small></span></div>
     <div class="srow"><span class="t">Trasa<small>Ikona trasy seřadí objednávky do nejlepšího pořadí od tvé polohy.</small></span></div>
     <div class="srow"><span class="t">Mapa<small>Ukáže zastávky a nakreslenou trasu, tlačítko spustí navigaci na první.</small></span></div>
-    <div class="srow"><span class="t">Barvy<small>Červená = vybrat hotově, modrá = kartou nebo zaplaceno, zelená = doručeno.</small></span></div>`
+    <div class="srow"><span class="t">Barvy<small>Červená = vybrat hotově, modrá = kartou nebo zaplaceno, zelená = doručeno.</small></span></div>`;
+function openDrawer(){
+  const sh=settings.shiftStart,d=orders.filter(o=>o.status==='dorucena').length;
+  $('drawer').innerHTML=`
+  <button class="promo" data-p="prehled"><span>Dnes doručeno ${d} ${d===1?'objednávka':d>1&&d<5?'objednávky':'objednávek'}<small>Hotovost k odevzdání ${kc(cashDone())}</small></span>${ic('bill').replace('class="i"','class="i promo-ic"')}</button>
+  <button class="mi" data-p="profil">${ic('user')}<span class="t">${esc(settings.name||'Kurýr Martini')}<small class="${sh?'on':''}">${sh?'Ve směně':'Mimo směnu'}</small></span></button>
+  <button class="mi" data-p="doruc">${ic('car')}<span class="t">Nastavení doručování</span></button>
+  <button class="mi" data-p="prehled">${ic('trend')}<span class="t">Můj přehled</span></button>
+  <button class="mi" data-p="finance">${ic('bag')}<span class="t">Finance</span></button>
+  <button class="mi" data-p="smeny">${ic('cal')}<span class="t">Směny</span></button>
+  <button class="mi" data-p="stats">${ic('chart')}<span class="t">Statistiky</span></button>
+  <button class="mi" data-p="nastaveni">${ic('gear')}<span class="t">Nastavení</span></button>
+  <button class="mi" data-p="feedback">${ic('chat')}<span class="t">Zpětná vazba</span></button>
+  <button class="mi" data-p="info">${ic('play')}<span class="t">Informační centrum</span></button>
+  <div class="ver">Verze ${APP_VERSION}</div>`;
+  $('drawer').classList.add('on');$('ovD').classList.add('on');
+}
+function closeDrawer(){$('drawer').classList.remove('on');$('ovD').classList.remove('on')}
+$('btnMenu').onclick=openDrawer;$('ovD').onclick=closeDrawer;
+$('drawer').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;closeDrawer();const p=b.dataset.p;if(p==='feedback')openFb();else{pageStack=[];openPage(p)}};
+const cashDone=()=>orders.filter(o=>o.status==='dorucena'&&o.pay==='hotove').reduce((s,o)=>s+(+o.collect||0),0);
+const czDay=t=>new Date(t).toLocaleDateString('cs-CZ',{day:'numeric',month:'long'});
+const dur=ms=>{const m=Math.max(0,Math.round(ms/60000));return m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`};
+let curPage='',pageStack=[],statRange='den';
+const TTL={profil:'Profil',doruc:'Nastavení doručování',prehled:'Můj přehled',finance:'Finance',smeny:'Směny',stats:'Statistiky',nastaveni:'Nastavení',vzhled:'Vzhled',navapp:'Navigační aplikace',info:'Informační centrum',edit:'Upravit'};
+function openPage(p,arg){
+  if(curPage&&$('page').classList.contains('on'))pageStack.push([curPage,pageArg]);
+  showPage(p,arg);
+}
+let pageArg=null;
+function showPage(p,arg){
+  curPage=p;pageArg=arg;$('pTtl').textContent=p==='edit'?EDIT[arg].label:TTL[p];
+  $('pBody').innerHTML=PAGES[p](arg);$('page').classList.add('on');$('page').scrollTop=0;$('page').classList.remove('scrolled');
+  (BIND[p]||(()=>{}))(arg);
+}
+function closePage(){
+  if(pageStack.length){const [p,a]=pageStack.pop();showPage(p,a);return}
+  $('page').classList.remove('on');curPage='';render();
+}
+$('pBack').onclick=closePage;
+$('page').addEventListener('scroll',()=>$('page').classList.toggle('scrolled',$('page').scrollTop>60));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('fb').classList.contains('on'))closeFb();else if($('page').classList.contains('on'))closePage();else closeDrawer()}});
+const done=()=>orders.filter(o=>o.status==='dorucena');
+const chev=`<svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>`;
+const row=(go,label,val,sub)=>`<button class="srow" ${go}><span class="t">${label}${sub?`<small>${sub}</small>`:''}</span>${val!=null?`<span class="val">${val}</span>`:''}${chev}</button>`;
+const NAVN={mapy:'Mapy.com',google:'Google Mapy',waze:'Waze',apple:'Apple Mapy'};
+const THN={auto:'Podle zařízení',light:'Světlý',dark:'Tmavý'};
+// odhad ujeté vzdálenosti: pizzerie → zastávky v pořadí doručení (nová várka = návrat do pizzerie), ×1,3 na silnice
+function kmOf(list){
+  const d=list.filter(o=>o.lat&&o.done).sort((a,b)=>a.done-b.done);let m=0,prev=PIZZERIA,prevDone=0;
+  for(const o of d){if(prevDone&&o.created>prevDone){m+=hav(prev,PIZZERIA);prev=PIZZERIA}m+=hav(prev,o);prev=o;prevDone=o.done}
+  if(d.length)m+=hav(prev,PIZZERIA);
+  return m*1.3/1000;
+}
+function summarize(list){const s=p=>list.filter(o=>o.pay===p).reduce((a,o)=>a+(+o.collect||0),0),paid=list.filter(o=>o.pay==='zaplaceno').reduce((a,o)=>a+(+o.total||0),0);
+  return {count:list.length,cash:s('hotove'),card:s('karta'),paid,km:kmOf(list)}}
+const EDIT={
+  name:{label:'Celé jméno',key:'name',ph:'např. Josef Kugler',type:'text',ac:'name'},
+  phone:{label:'Telefonní číslo',key:'phone',ph:'např. 731 846 021',type:'tel',ac:'tel'},
+  city:{label:'Doručovací oblast',key:'city',ph:'např. Dobříš',type:'text',hint:'Doplní se k adrese, když na účtence obec chybí.'},
+  fbEmail:{label:'E-mail pro hodnocení',key:'fbEmail',ph:'např. jan@seznam.cz',type:'email',hint:'Když je prázdné, hodnocení se jen uloží v telefonu.'}
+};
+const PAGES={
+  profil:()=>`<h1 class="h1">Profil</h1>
+    <h2 class="h2">Osobní údaje</h2>
+    ${row('data-e="name"','Celé jméno',null,esc(settings.name||'Nenastaveno'))}
+    ${row('data-e="phone"','Telefonní číslo',null,esc(settings.phone||'Nenastaveno'))}
+    <h2 class="h2">Práce</h2>
+    <div class="prof"><div class="lab">Rozvážím pro</div><div class="val">Pizzeria Martini, Dobříš</div>
+    <div class="lab">Stav</div><div class="val">${settings.shiftStart?'Ve směně od '+hhmm(settings.shiftStart):'Mimo směnu'}</div>
+    <div class="lab">Odjeté směny</div><div class="val">${shifts.length}</div>
+    <div class="lab">Doručeno celkem</div><div class="val">${shifts.reduce((s,x)=>s+x.count,0)+done().length}</div></div>
+    <p class="note2" style="margin-top:24px">Údaje jsou uložené jen v tomhle telefonu.</p>`,
+  doruc:()=>`<h1 class="h1">Přizpůsob si nastavení doručování</h1>
+    <button class="srow" data-e="city">${ic('pin')}<span class="t">Doručovací oblast<small>${esc(settings.city||'Nenastaveno')}</small></span>${chev}</button>
+    <button class="srow" data-go="navapp">${ic('nav')}<span class="t">Navigace<small>${NAVN[settings.navApp]}</small></span>${chev}</button>
+    <div class="srow">${ic('route')}<span class="t">Řadit podle trasy<small>Nejlepší pořadí zastávek od tvé polohy</small></span><button class="sw ${settings.sort==='route'?'on':''}" data-t="sort" role="switch" aria-checked="${settings.sort==='route'}" aria-label="Řadit podle trasy"></button></div>`,
+  prehled:PAGES_prehled,
+  finance:PAGES_finance,
+  smeny:PAGES_smeny,
+  stats:()=>{
+    const now=new Date(),t0={den:new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),tyden:(()=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()})(),mesic:new Date(now.getFullYear(),now.getMonth(),1).getTime(),vse:0}[statRange];
+    const cur=summarize(done().filter(o=>(o.done||0)>=t0)),hs=shifts.filter(x=>x.end>=t0);
+    const tot={count:cur.count,cash:cur.cash,card:cur.card,paid:cur.paid,km:cur.km};
+    hs.forEach(x=>{tot.count+=x.count;tot.cash+=x.cash||0;tot.card+=x.card||0;tot.paid+=x.paid||0;tot.km+=x.km||0});
+    const seg=[['den','Dnes'],['tyden','Tento týden'],['mesic','Tento měsíc'],['vse','Celkem']].map(([v,l])=>`<button data-r="${v}" class="${statRange===v?'on':''}">${l}</button>`).join('');
+    const lbl={den:czDay(Date.now()),tyden:'Tento týden',mesic:now.toLocaleDateString('cs-CZ',{month:'long'}).replace(/^./,c=>c.toUpperCase()),vse:'Od začátku'}[statRange];
+    return `<h1 class="h1">Statistiky</h1><div class="seg seg-s" id="stRange">${seg}</div>
+    <h2 class="h2" style="font-size:22px">${lbl}</h2>
+    <div class="kv2"><span>Doručené objednávky</span><b>${tot.count}</b></div>
+    <div class="kv2"><span>Vzdálenost (odhad)</span><b>${tot.km.toFixed(1).replace('.',',')} km</b></div>
+    <div class="kv2"><span>Hotovost</span><b>${kc(tot.cash)}</b></div>
+    <div class="kv2"><span>Kartou</span><b>${kc(tot.card)}</b></div>
+    <div class="kv2"><span>Zaplaceno online</span><b>${kc(tot.paid)}</b></div>
+    <div class="kv2"><span>Tržba celkem</span><b>${kc(tot.cash+tot.card+tot.paid)}</b></div>
+    <p class="note2" style="margin-top:16px">Vzdálenost je odhad z poloh zastávek. Starší směny bez těchto údajů se počítají jen do počtu a hotovosti.</p>`;
+  },
+  nastaveni:()=>`<h1 class="h1">Nastavení</h1>
+    <h2 class="h2">Navigace</h2>
+    ${row('data-go="navapp"','Navigační aplikace',NAVN[settings.navApp])}
+    <h2 class="h2">Displej a zvuk</h2>
+    ${row('data-go="vzhled"','Vzhled',THN[settings.theme||'light'])}
+    <div class="srow"><span class="t">Zvuk a vibrace<small>Pípnutí při potvrzení sliderem a nové objednávce</small></span><button class="sw ${settings.sound!==false?'on':''}" data-t="sound" role="switch" aria-checked="${settings.sound!==false}" aria-label="Zvuk a vibrace"></button></div>
+    <h2 class="h2">Komunikace</h2>
+    ${row('data-fb="1"','Pošli svůj názor')}
+    ${row('data-e="fbEmail"','E-mail pro hodnocení',esc(settings.fbEmail||'—'))}
+    <h2 class="h2">Data</h2>
+    <button class="srow" id="wipe"><span class="t" style="color:var(--red-ink)">Smazat všechna data appky<small>Objednávky, směny i nastavení v tomhle telefonu</small></span></button>
+    <p class="note2" style="margin-top:22px">Verze appky: ${APP_VERSION}</p>`,
+  vzhled:()=>`<h1 class="h1">Vzhled</h1><h2 class="h2">Vzhled</h2>
+    ${['auto','light','dark'].map(v=>`<button class="srow ck" data-th="${v}"><span class="t">${THN[v]==='Podle zařízení'?'Použít vzhled zařízení':THN[v]}</span>${(settings.theme||'light')===v?ic('check'):''}</button>`).join('')}
+    <h2 class="h2">Animace</h2>
+    <div class="srow"><span class="t">Omezit animace<small>Zakázat animace panelů a karet</small></span><button class="sw ${settings.calm?'on':''}" data-t="calm" role="switch" aria-checked="${!!settings.calm}" aria-label="Omezit animace"></button></div>`,
+  navapp:()=>`<h1 class="h1">Navigační aplikace</h1><p class="lead" style="margin-bottom:10px">Tlačítko Navigace rovnou spustí trasu v téhle aplikaci.</p>
+    ${['mapy','google','waze','apple'].map(v=>`<button class="srow ck" data-nv="${v}"><span class="t">${NAVN[v]}${v==='apple'?'<small>Trasu jen naplánuje, „Jet“ klepneš sám</small>':''}</span>${settings.navApp===v?ic('check'):''}</button>`).join('')}`,
+  edit:k=>{const f=EDIT[k];return `<h1 class="h1">${f.label}</h1><label class="fld"><span>${f.label}</span><input id="edV" type="${f.type}" value="${esc(settings[f.key]||'')}" placeholder="${f.ph}" ${f.ac?`autocomplete="${f.ac}"`:''}></label>${f.hint?`<p class="hint">${f.hint}</p>`:''}<div class="btns" style="max-width:none;margin-top:14px"><button class="btn pri" id="edSave">Uložit</button></div>`},
+  info:PAGES_info
 };
 const BIND={
-  nastaveni:()=>{
-    $('sNav').onclick=e=>{const b=e.target.closest('button');if(!b)return;settings.navApp=b.dataset.v;saveSettings();[...$('sNav').children].forEach(x=>x.classList.toggle('on',x===b))};
-    const sv=()=>{settings.city=$('sCity').value.trim();settings.name=$('sName').value.trim();settings.fbEmail=$('sFb').value.trim();saveSettings()};
-    ['sCity','sName','sFb'].forEach(id=>$(id).addEventListener('input',sv));
-  },
+  profil:()=>bindRows(),doruc:()=>bindRows(),nastaveni:()=>{bindRows();
+    let armed=false;$('wipe').onclick=()=>{if(!armed){armed=true;$('wipe').querySelector('.t').firstChild.textContent='Klepni znovu – smaže úplně vše';return}
+      try{Object.keys(localStorage).filter(k=>k.startsWith('martini.')).forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()}},
+  vzhled:()=>{bindRows();$('pBody').querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.th;saveSettings();applyTheme();showPage('vzhled')})},
+  navapp:()=>{$('pBody').querySelectorAll('[data-nv]').forEach(b=>b.onclick=()=>{settings.navApp=b.dataset.nv;saveSettings();showPage('navapp');toast('Navigace: '+NAVN[settings.navApp])})},
+  stats:()=>{$('stRange').onclick=e=>{const b=e.target.closest('button');if(!b)return;statRange=b.dataset.r;showPage('stats')}},
+  edit:k=>{const f=EDIT[k],sv=()=>{settings[f.key]=$('edV').value.trim();saveSettings();if(k==='city')orders.filter(o=>!o.city).forEach(o=>{o.geoQ='';o.lat=null});closePage();toast('Uloženo')};
+    $('edSave').onclick=sv;$('edV').onkeydown=e=>{if(e.key==='Enter')sv()};setTimeout(()=>$('edV').focus(),350)},
   smeny:()=>{
-    if($('startShift'))$('startShift').onclick=()=>{settings.shiftStart=Date.now();saveSettings();openPage('smeny');toast('Směna začala')};
+    if($('startShift'))$('startShift').onclick=()=>{settings.shiftStart=Date.now();saveSettings();showPage('smeny');toast('Směna začala')};
     if($('endShift')){let armed=false;$('endShift').onclick=()=>{
       if(!armed){armed=true;$('endShift').innerHTML=`${ic('trash')}Opravdu ukončit? Smaže ${orders.length} obj.`;return}
-      const d=done(),entry={start:settings.shiftStart||Date.now(),end:Date.now(),count:d.length,cash:cashDone()};
+      const sm=summarize(done()),entry={start:settings.shiftStart||Date.now(),end:Date.now(),...sm};
       const bo=orders,bs=settings.shiftStart;
-      shifts.push(entry);saveShifts();orders=[];save();settings.shiftStart=null;saveSettings();openPage('smeny');
-      toast('Směna ukončena',()=>{shifts.pop();saveShifts();orders=bo;save();settings.shiftStart=bs;saveSettings();openPage('smeny')});
+      shifts.push(entry);saveShifts();orders=[];save();settings.shiftStart=null;saveSettings();showPage('smeny');
+      toast('Směna ukončena',()=>{shifts.pop();saveShifts();orders=bo;save();settings.shiftStart=bs;saveSettings();showPage('smeny')});
     }}
   }
 };
+function bindRows(){
+  const b=$('pBody');
+  b.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>openPage(x.dataset.go));
+  b.querySelectorAll('[data-e]').forEach(x=>x.onclick=()=>openPage('edit',x.dataset.e));
+  b.querySelectorAll('[data-fb]').forEach(x=>x.onclick=()=>openFb());
+  b.querySelectorAll('.sw[data-t]').forEach(x=>x.onclick=()=>{const t=x.dataset.t;
+    if(t==='sort'){settings.sort=settings.sort==='route'?'time':'route';routeKey='';route=null;if(settings.sort==='route')startGeo()}
+    else settings[t]=t==='sound'?settings.sound===false:!settings[t];
+    saveSettings();applyTheme();const on=t==='sort'?settings.sort==='route':t==='sound'?settings.sound!==false:!!settings[t];x.classList.toggle('on',on);x.setAttribute('aria-checked',on)});
+}
+function applyTheme(){
+  const t=settings.theme||'light',dark=t==='dark'||(t==='auto'&&!(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches));
+  document.documentElement.dataset.theme=dark?'dark':'light';document.documentElement.classList.toggle('calm',!!settings.calm);
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.content=dark?'#0B0E17':'#F4F4F6';
+}
+try{matchMedia('(prefers-color-scheme: light)').addEventListener('change',applyTheme)}catch(e){}
+if(!settings.themeV2){settings.theme='light';settings.themeV2=1;saveSettings()}
+applyTheme();
+// zvuk + vibrace (krátké pípnutí)
+let actx=null;
+function beep(f=880){if(settings.sound===false)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.18);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.2)}catch(e){}if(navigator.vibrate)navigator.vibrate(15)}
 
 /* ================= hodnocení při spuštění ================= */
 const FBKEY='martini.fb.v1';let fbRate=0;
