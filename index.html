@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Martini">
+<meta name="theme-color" content="#20212B">
+<title>Martini rozvoz</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E84C2B'/%3E%3Cpath d='M12 22h24l8 10h8v10H12z' fill='white'/%3E%3Ccircle cx='22' cy='44' r='5' fill='%23E84C2B' stroke='white' stroke-width='3'/%3E%3Ccircle cx='44' cy='44' r='5' fill='%23E84C2B' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23E84C2B'/%3E%3Cpath d='M36 64h66l24 28h20v28H36z' fill='white'/%3E%3Ccircle cx='62' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3Ccircle cx='124' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --top:#20212B; --red:#E84C2B; --red-ink:#C2381B; --blue:#4A9BE0; --green:#5BC25A; --green-ink:#2E8B2D;
+  --bg:#F4F4F6; --card:#fff; --line:rgba(60,60,67,.14); --field:rgba(60,60,67,.2);
+  --soft:rgba(118,118,128,.12); --ink:#111; --muted:rgba(60,60,67,.66);
+  --ease:cubic-bezier(.32,.72,0,1);
+}
+*{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.4 "Fira Sans",-apple-system,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation;border:0;background:none;padding:0}
+a{color:inherit}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:3px solid rgba(74,155,224,.6);outline-offset:2px}
+
+/* horní lišta jako Rozvezto */
+.top{position:sticky;top:0;z-index:20;background:var(--top);color:#fff;padding:calc(env(safe-area-inset-top) + 6px) 10px 8px;display:flex;align-items:center;gap:8px}
+.top .ham{width:48px;height:48px;display:grid;place-items:center;border-radius:12px}
+.top .ham svg{width:28px;height:28px}
+.brand{flex:1;line-height:1.15}
+.brand b{display:block;font-size:20px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
+.brand span{display:block;font-size:13px;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .plus{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.12)}
+.top .cam{height:48px;padding:0 16px 0 12px;border-radius:999px;display:flex;align-items:center;gap:8px;background:var(--red);font-weight:600;font-size:17px;box-shadow:0 4px 14px rgba(232,76,43,.45)}
+.top .cam svg{width:24px;height:24px}
+button:active{transform:scale(.97);transition:transform .1s}
+
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;height:48px;font-size:16px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent}
+.tabs button.on{color:var(--ink);border-color:var(--red)}
+.sum{display:flex;gap:16px;padding:10px 14px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.sum b{color:var(--ink);font-weight:600;white-space:nowrap}
+main{max-width:640px;margin:0 auto}
+.sec{font-size:14px;font-weight:600;color:var(--muted);margin:10px 14px 6px;text-transform:uppercase;letter-spacing:.04em}
+
+/* karta */
+.card{background:var(--card);margin:0 0 14px;border-radius:22px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+@media(min-width:660px){.card{margin:0 0 16px}main{padding:0 10px}}
+.strip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 20px;color:#fff;background:var(--blue)}
+.st-jedu .strip{background:var(--red)} .st-dorucena .strip{background:var(--green-ink)}
+.strip b{font-size:26px;font-weight:600}
+.strip .tm{display:flex;align-items:center;gap:6px;font-size:22px;font-weight:500;white-space:nowrap}
+.strip .tm svg{width:24px;height:24px}
+.strip .tm i{font-style:normal;opacity:.6}
+.late .strip .tm em{font-style:normal;background:#fff;color:var(--red-ink);border-radius:8px;padding:0 6px;font-weight:600}
+.cbody{padding:14px 20px 6px;position:relative}
+.crow{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.crow b{font-size:22px;font-weight:600;line-height:1.2}
+.crow span{font-size:17px;white-space:nowrap}
+.csub{font-size:15px;color:var(--muted);margin-top:4px}
+.csub b{color:var(--ink);font-weight:600}
+.csub .paid{color:var(--green-ink);font-weight:600}
+.toggle{display:grid;place-items:center;margin:8px auto 4px;width:48px;height:48px}
+.toggle span{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;box-shadow:0 2px 6px rgba(232,76,43,.35);transition:transform .3s var(--ease)}
+.open .toggle span{transform:rotate(180deg)}
+.toggle svg{width:22px;height:22px;stroke-width:3}
+.det{display:none;padding-bottom:6px}
+.open .det{display:block}
+.dr{display:flex;align-items:center;gap:14px;padding:6px 0;font-size:18px;text-decoration:none}
+.dr .ico{width:34px;height:34px;border-radius:50%;border:2px solid var(--red);color:var(--red);display:grid;place-items:center;flex:none}
+.dr .ico svg{width:18px;height:18px}
+.dr b{font-weight:600}
+a.dr{color:var(--ink)}
+.items{border-top:1px solid var(--line);margin:8px -20px 0;padding:8px 20px 0}
+.it{display:flex;gap:14px;padding:5px 0;font-size:18px}
+.it .q{width:30px;flex:none}
+.it .ex{display:block;margin-left:-20px}
+.it .ex::before{content:"+ "}
+.tools{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tool{height:40px;padding:0 12px;border-radius:12px;background:var(--soft);display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}
+.tool svg.i{width:18px;height:18px}
+.tool.red{color:var(--red-ink)}
+
+/* spodní lišta karty: slider + volat + navigace */
+.bar{display:flex;margin-top:8px;border-top:1px solid var(--line);height:58px}
+.bar>*{height:100%}
+.call,.nav{display:flex;align-items:center;justify-content:center;gap:6px;font-size:16px;font-weight:500;text-decoration:none;color:var(--ink);background:#fff}
+.call{width:60px;flex:none;border-left:1px solid var(--line)}
+.nav{flex:1;border-left:1px solid var(--line)}
+.call.off,.nav.off{opacity:.35;pointer-events:none}
+.back{flex:1.25;display:flex;align-items:center;justify-content:center;gap:6px;font-size:16px;font-weight:500;background:var(--soft)}
+.slide{flex:1.25;position:relative;background:var(--green);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.st-jedu .slide{background:#3DA53C}
+.slide .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-left:46px;color:#fff;font-size:16px;font-weight:600;pointer-events:none;white-space:nowrap}
+.slide .lbl::after{content:"›››";margin-left:6px;letter-spacing:-1px;opacity:.7;animation:hint 1.6s infinite}
+@keyframes hint{50%{opacity:.25}}
+.slide .knob{position:absolute;left:5px;top:5px;bottom:5px;width:48px;border-radius:14px;background:#fff;color:var(--green-ink);display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.18);cursor:grab}
+.slide .knob svg{width:24px;height:24px;stroke-width:2.6}
+.slide.snap .knob{transition:transform .35s var(--ease)} .slide.snap .lbl{transition:opacity .35s}
+
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty .tile{width:72px;height:72px;border-radius:20px;background:var(--soft);display:grid;place-items:center;margin:0 auto 14px}
+.empty .tile svg{width:34px;height:34px}
+.empty h2{color:var(--ink);font-size:22px;font-weight:600;margin:0 0 6px}
+.empty p{margin:0 0 18px;font-size:15px}
+.btns{display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto}
+.btn{height:52px;border-radius:14px;font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--soft);width:100%}
+.btn.pri{background:var(--red);color:#fff}
+.btn.danger{background:#FDECEA;color:var(--red-ink)}
+
+/* sheet */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:40;opacity:0;pointer-events:none;transition:opacity .3s}
+.ov.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:92dvh;display:flex;flex-direction:column;background:#F7F7FA;border-radius:26px 26px 0 0;
+  transform:translateY(105%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden;box-shadow:0 -8px 32px rgba(0,0,0,.15);max-width:640px;margin:0 auto}
+.sheet.on{transform:none;visibility:visible;transition:transform .4s var(--ease)}
+.sh-head{display:flex;align-items:center;justify-content:space-between;padding:8px 6px 2px;position:relative}
+.sh-head::before{content:"";position:absolute;top:6px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:9px;background:rgba(60,60,67,.3)}
+.sh-head h3{margin:14px 0 4px;font-size:17px;font-weight:600}
+.sh-head button{height:44px;padding:0 12px;font-size:17px;color:var(--red-ink);margin-top:10px;min-width:84px}
+.sh-head .save{font-weight:700}
+.sh-body{overflow:auto;padding:8px 16px calc(24px + env(safe-area-inset-bottom))}
+.fld{display:block;margin-bottom:12px}
+.fld>span{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 4px 5px}
+.fld input,.fld textarea{width:100%;border:1px solid var(--field);background:#fff;border-radius:12px;padding:12px;font-size:16px;outline:none}
+.fld textarea{min-height:80px;resize:vertical}
+.fld input:focus,.fld textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,76,43,.15)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.seg{display:flex;background:var(--soft);border-radius:999px;padding:3px}
+.seg button{flex:1;height:40px;border-radius:999px;font-size:15px;font-weight:500;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.hint{font-size:13px;color:var(--muted);margin:-6px 4px 12px}
+.prev{display:block;width:100%;max-height:220px;object-fit:contain;border-radius:16px;background:#e6e6eb;margin-bottom:12px}
+.prog{height:10px;border-radius:9px;background:var(--soft);overflow:hidden;margin:6px 0 8px}
+.prog i{display:block;height:100%;width:0;background:var(--red);border-radius:9px;transition:width .3s}
+.status{font-size:15px;color:var(--muted);text-align:center}
+.group{background:#fff;border-radius:18px;overflow:hidden;margin-bottom:14px}
+.gr{display:flex;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);font-size:16px}
+.gr:last-child{border:0}
+.gr b{white-space:nowrap;font-weight:600}
+.raw{font-size:13px;white-space:pre-wrap;color:var(--muted);background:#fff;border-radius:12px;padding:10px;max-height:220px;overflow:auto}
+.full{width:100%;border-radius:16px}
+.warn{background:#FFF4E5;color:#8A4B00;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,160%);z-index:60;background:rgba(28,28,30,.94);color:#fff;
+  border-radius:999px;padding:10px 18px;display:flex;align-items:center;gap:12px;font-size:15px;transition:transform .35s var(--ease);max-width:calc(100% - 32px);white-space:nowrap}
+.toast:not(.on){visibility:hidden;transition:transform .35s var(--ease),visibility 0s .35s}
+.toast.on{transform:translate(-50%,0)}
+.toast button{color:#FF9B85;font-weight:700;height:32px;display:none}
+.toast.undo button{display:block}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:opacity .2s!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="ham" id="btnMenu" aria-label="Směna a nastavení"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  <div class="brand"><b>Martini</b><span id="sub">Rozvoz</span></div>
+  <button class="plus" id="btnAdd" aria-label="Přidat z galerie nebo ručně"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="cam" id="btnCam" aria-label="Vyfotit účtenku"><svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Foto</button>
+</header>
+<input type="file" id="inCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="inGal" accept="image/*" hidden>
+<nav class="tabs"><button id="tabA" class="on">Aktivní</button><button id="tabD">Doručené</button></nav>
+<main>
+  <div class="sum" id="sum"></div>
+  <div id="list"></div>
+</main>
+
+<div class="ov" id="ov"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+  <div class="sh-head"><button id="shCancel">Zrušit</button><h3 id="shTitle"></h3><button id="shOk" class="save"></button></div>
+  <div class="sh-body" id="shBody"></div>
+</section>
+<div class="toast" id="toast"><span id="toastTxt"></span><button id="toastBtn">Zpět</button></div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script>
+{
+/* ================= ikony a pomocníci ================= */
+const P={
+  nav:'<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.9.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  down:'<path d="m6 9 6 6 6-6"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+  money:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+  note:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/>',
+  receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+  cam:'<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
+  right:'<path d="m9 18 6-6-6-6"/>',
+  undo:'<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-15-6.7L3 13"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>'
+};
+const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${P[n]}</svg>`;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kc=n=>(Math.round((+n||0)*100)/100).toLocaleString('cs-CZ')+' Kč';
+
+/* ================= úložiště ================= */
+const KEY='martini.orders.v2', SKEY='martini.settings.v3';
+let orders=[], settings={city:'Dobříš',navApp:'mapy'}, tab='A';
+const opened=new Set();
+try{orders=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+try{Object.assign(settings,JSON.parse(localStorage.getItem(SKEY)||'{}'))}catch(e){}
+function save(){
+  const w=()=>localStorage.setItem(KEY,JSON.stringify(orders));
+  try{w()}catch(e){
+    orders.forEach(o=>{if(o.status==='dorucena')o.photo=''});
+    try{w()}catch(e2){orders.forEach(o=>o.photo='');try{w()}catch(e3){}}
+  }
+}
+const saveSettings=()=>{try{localStorage.setItem(SKEY,JSON.stringify(settings))}catch(e){}};
+
+/* ================= čtení účtenky Speedlo ================= */
+const NAME_RE=/^[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ][a-záčďéěíňóřšťúůýž]+(?:[ -][A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ][a-záčďéěíňóřšťúůýž.]+){1,2}$/;
+const PHONE_RE=/(?:^|[^\d])(?:\+?\s?420[\s.-]?)?(\d{3})[\s.-]?(\d{3})[\s.-]?(\d{3})(?!\d)/;
+function amountIn(l){
+  const ms=[...l.matchAll(/(\d{1,3}(?:[  ]\d{3})+|\d+)(?:[.,](\d{1,2}))?\s*(?=kč|kc|czk|,-)/gi)];
+  if(!ms.length)return null;const m=ms[ms.length-1];
+  return parseFloat(m[1].replace(/[  ]/g,'')+'.'+(m[2]||'0'));
+}
+const stripPrice=s=>s.replace(/(\s+\d[\d  .,]*\s*(kč|kc|czk|,-)\.?)+\s*$/i,'').replace(/[|]+$/,'').trim();
+function itemsFromLines(lines){
+  const items=[];
+  for(const l of lines){
+    if(items.length&&(/^(celkem|dph|hotov|kart|platba|vybrat|doru)/i.test(l.replace(/^[^\p{L}\d+]+/u,''))||PHONE_RE.test(l)))break;
+    const m=l.match(/^([1-9lI|]\d?)\s*(?:[x×X*]|ks)\s*(.+)$/);
+    if(m){const name=stripPrice(m[2]);if(name)items.push({q:parseInt(m[1].replace(/[lI|]/,'1'),10)||1,name,ex:[]})}
+    else if(/^[+•–-]\s*\S/.test(l)&&items.length){const e=stripPrice(l.replace(/^[+•–-]\s*/,''));if(e)items[items.length-1].ex.push(e)}
+  }
+  return items;
+}
+function detectPay(t){t=t.toLowerCase();
+  if(/hotov|cash/.test(t))return 'hotove';
+  if(/kart|termin/.test(t))return 'karta';
+  if(/online|zaplacen|uhrazen|předem|predem|gopay|comgate|stripe|qr/.test(t))return 'zaplaceno';
+  return '';
+}
+function parseReceipt(text){
+  const L=text.replace(/\r/g,'').split('\n').map(l=>l.replace(/[ \t]+/g,' ').replace(/^[|—–>«»\s]+|[|\s]+$/g,'').trim()).filter(Boolean);
+  const o={num:'',street:'',city:'',name:'',phone:'',total:'',collect:'',pay:'',note:'',deliverAt:'',deliverDate:'',items:[]};
+  // číslo objednávky = samotné krátké číslo na řádku (Speedlo ho tiskne nahoru i k adrese)
+  const numIdx=L.map((l,i)=>/^\D{0,2}\d{1,4}\D{0,1}$/.test(l)?i:-1).filter(i=>i>=0);
+  if(numIdx.length)o.num=L[numIdx[0]].replace(/\D/g,'');
+  // telefon zákazníka – poslední telefon (nahoře je hlavička pizzerie)
+  let pi=-1;
+  L.forEach((l,i)=>{if(!/ič|dič|kč|kc|účtenk|provoz/i.test(l)&&PHONE_RE.test(l))pi=i});
+  if(pi>=0){const m=L[pi].match(PHONE_RE);o.phone=`${m[1]} ${m[2]} ${m[3]}`}
+  // adresa = řádek nad telefonem, jméno = řádek pod telefonem
+  if(pi>0){
+    let a=L[pi-1];
+    if(/^\D{0,2}\d{1,4}\D{0,1}$/.test(a)&&pi>1)a='';
+    if(a&&/[a-zá-ž]/i.test(a)){
+      const [s,...c]=a.split(',');o.street=s.trim();o.city=c.join(',').replace(/\d{3}\s?\d{2}/,'').trim();
+    }
+    const n=L[pi+1];
+    if(n&&!/doru|platb|vybrat/i.test(n))o.name=n.replace(/[^A-Za-zÁ-ž .-]/g,'').trim();
+  }
+  // čas doručení
+  const di=L.findIndex(l=>/doru[čc]it/i.test(l));
+  if(di>=0){
+    const m=L[di].match(/(\d{1,2})\.\s?(\d{1,2})\.?\s*v?\s*(\d{1,2})[:.](\d{2})/)||L[di].match(/(\d{1,2})[:.](\d{2})/);
+    if(m&&m.length===5){o.deliverDate=`${+m[1]}. ${+m[2]}.`;o.deliverAt=`${m[3].padStart(2,'0')}:${m[4]}`}
+    else if(m){o.deliverAt=`${m[1].padStart(2,'0')}:${m[2]}`}
+    else if(/ihned|nejd/i.test(L[di]))o.deliverAt='ihned';
+  }
+  // poznámka: řádky mezi jménem a „doručit“ + cokoli s „pozn“
+  const notes=[];
+  if(pi>=0&&di>pi+2)for(let i=pi+2;i<di;i++)if(L[i].length>2)notes.push(L[i]);
+  L.forEach(l=>{if(/pozn[aá]mk|pozn\.|vzkaz/i.test(l))notes.push(l.replace(/^[^:]*:\s*/,''))});
+  o.note=notes.join(' ').trim();
+  // platba
+  const pl=L.find(l=>/^pl\w*ba\s+\S/i.test(l)&&!/^platba$/i.test(l));
+  o.pay=pl?detectPay(pl):'';
+  if(!o.pay){const h=L.find(l=>/^(hotov|kart|online|zaplac)/i.test(l));if(h)o.pay=detectPay(h)}
+  if(!o.pay&&pi>=0)o.pay=detectPay(L.slice(pi).join(' '));
+  // částky
+  const vy=L.find(l=>/vybrat/i.test(l));
+  const va=vy?amountIn(vy):null;
+  const ce=L.find(l=>/^celkem\b/i.test(l)&&amountIn(l)!=null);
+  const hl=L.find(l=>/^(hotov|kart)/i.test(l)&&amountIn(l)!=null);
+  o.total=ce?String(amountIn(ce)):hl?String(amountIn(hl)):va!=null?String(va):'';
+  if(va!=null){o.collect=String(va);if(va===0&&!o.pay)o.pay='zaplaceno'}
+  else if(o.pay==='zaplaceno')o.collect='0';
+  else o.collect=hl?String(amountIn(hl)):o.total;
+  // záloha, když chybí telefon: hledej adresu ve spodní části
+  if(!o.street){
+    const from=numIdx.length>1?numIdx[1]+1:Math.floor(L.length/2);
+    const st=L.slice(from).find(l=>/^[A-Za-zÁ-ž][^\d:]{2,40}\s\d{1,5}[a-zA-Z]?(?:\/\d{1,5}[a-zA-Z]?)?(?:,.*)?$/.test(l)&&!/kč|celkem|dph|vybrat/i.test(l));
+    if(st){const [s,...c]=st.split(',');o.street=s.trim();o.city=c.join(',').trim()}
+  }
+  if(!o.name){const n=L.slice(Math.max(0,pi)).find(l=>NAME_RE.test(l)&&!/Děkujeme|Pizzeria/i.test(l));if(n)o.name=n}
+  // položky (bez hlavičky pizzerie)
+  o.items=itemsFromLines(L);
+  return o;
+}
+const itemsToText=items=>items.map(it=>`${it.q}x ${it.name}`+it.ex.map(e=>`\n+ ${e}`).join('')).join('\n');
+
+/* ================= fotka → ořez účtenky, zvětšení, kontrast ================= */
+function loadImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(new Error('fotku se nepodařilo otevřít'));im.src=u})}
+async function prepImage(src){
+  const im=src instanceof HTMLImageElement?src:await loadImg(src);
+  const W=im.naturalWidth,H=im.naturalHeight;
+  // 1) najdi světlý pruh papíru (sloupce)
+  const sw=400,sh=Math.round(H*sw/W),sc=document.createElement('canvas');sc.width=sw;sc.height=sh;
+  const sx=sc.getContext('2d',{willReadFrequently:true});sx.drawImage(im,0,0,sw,sh);
+  const sd=sx.getImageData(0,0,sw,sh).data,cm=new Float32Array(sw);
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){const k=(y*sw+x)*4;cm[x]+=(.299*sd[k]+.587*sd[k+1]+.114*sd[k+2])/sh}
+  const sorted=[...cm].sort((a,b)=>a-b),lo=sorted.slice(0,Math.floor(sw*.3)).reduce((a,b)=>a+b,0)/Math.floor(sw*.3);
+  const thr=(sorted[sw-1]+lo)/2;let best=[0,0,sw],st=-1;
+  for(let x=0;x<=sw;x++){const on=x<sw&&cm[x]>thr;if(on&&st<0)st=x;if(!on&&st>=0){if(x-st>best[0])best=[x-st,st,x];st=-1}}
+  let x0=0,x1=W;
+  if(best[0]>sw*.2&&best[0]<sw*.95&&sorted[sw-1]-lo>40){x0=Math.max(0,Math.floor(best[1]*W/sw)-12);x1=Math.min(W,Math.ceil(best[2]*W/sw)+12)}
+  // 2) zvětši ořez na šířku ~1600 px (max 9 Mpx)
+  const cw=x1-x0;let f=1600/cw;if(cw*f*H*f>9e6)f=Math.sqrt(9e6/(cw*H));
+  const c=document.createElement('canvas');c.width=Math.round(cw*f);c.height=Math.round(H*f);
+  const x=c.getContext('2d',{willReadFrequently:true});x.imageSmoothingQuality='high';x.drawImage(im,x0,0,cw,H,0,0,c.width,c.height);
+  // náhled pro uložení
+  const t=document.createElement('canvas'),ts=Math.min(1,1100/c.height);t.width=Math.round(c.width*ts);t.height=Math.round(c.height*ts);
+  t.getContext('2d').drawImage(c,0,0,t.width,t.height);const thumb=t.toDataURL('image/jpeg',.6);
+  // 3) šedá + kontrast
+  const d=x.getImageData(0,0,c.width,c.height),p=d.data;
+  for(let i=0;i<p.length;i+=4){let g=.299*p[i]+.587*p[i+1]+.114*p[i+2];g=Math.max(0,Math.min(255,(g-128)*1.5+140));p[i]=p[i+1]=p[i+2]=g}
+  x.putImageData(d,0,0);
+  return {canvas:c,thumb};
+}
+
+/* ================= OCR (předehřeje se hned po spuštění) ================= */
+let workerP=null,progCb=()=>{};
+const STAT={'loading tesseract core':'Spouštím čtečku…','initializing tesseract':'Spouštím čtečku…','loading language traineddata':'Stahuji češtinu (jen poprvé)…','initializing api':'Připravuji…','recognizing text':'Čtu účtenku…'};
+const ONWEB=/^https?:$/.test(location.protocol);
+const NOWEB='Appka musí běžet z webové adresy (GitHub Pages / Netlify). V náhledu souboru čtení účtenek nefunguje.';
+function errText(e){
+  if(!e)return 'neznámá chyba';
+  if(typeof e==='string')return e;
+  if(e.message)return e.message;
+  if(e.type)return ONWEB?'nepodařilo se načíst čtečku – zkontroluj připojení a zkus to znovu':NOWEB;
+  return String(e);
+}
+function getWorker(){
+  if(!ONWEB)return Promise.reject(new Error(NOWEB));
+  if(!window.Tesseract)return Promise.reject(new Error('Čtečka se nenačetla – zkontroluj připojení a obnov stránku.'));
+  if(!workerP)workerP=Tesseract.createWorker('ces',1,{
+    workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js',
+    corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1',
+    langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/ces@1.0.0/4.0.0_best_int',
+    gzip:true,logger:m=>progCb(m)}).then(async w=>{
+    await w.setParameters({tessedit_pageseg_mode:'4',user_defined_dpi:'300',preserve_interword_spaces:'1'});return w;
+  }).catch(e=>{workerP=null;throw new Error(errText(e))});
+  return workerP;
+}
+async function ocr(canvas){const w=await getWorker();return (await w.recognize(canvas)).data.text||''}
+if(ONWEB)setTimeout(()=>{getWorker().catch(()=>{})},800);
+
+/* ================= geokódování (pro přesnou navigaci) ================= */
+const geoCache=new Map();
+function geoFetch(q){
+  if(!geoCache.has(q))geoCache.set(q,fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=cz&accept-language=cs&q='+encodeURIComponent(q))
+    .then(r=>r.json()).then(j=>j[0]?{lat:+j[0].lat,lon:+j[0].lon}:null).catch(()=>{geoCache.delete(q);return null}));
+  return geoCache.get(q);
+}
+async function geocode(o){
+  if(!o.street||!ONWEB)return;
+  const q=[o.street,o.city||settings.city].filter(Boolean).join(', ');
+  if(o.geoQ===q&&o.lat)return;
+  const r=await geoFetch(q);
+  if(r){o.lat=r.lat;o.lon=r.lon;o.geoQ=q}else{o.lat=o.lon=null}
+  if(orders.includes(o)){save();if(!drag)render()}
+}
+
+/* ================= sheet + toast ================= */
+let onOk=null;
+function openSheet(title,html,ok,okFn){
+  $('shTitle').textContent=title;$('shBody').innerHTML=html;
+  $('shOk').textContent=ok||'';$('shOk').style.visibility=ok?'visible':'hidden';
+  onOk=okFn;$('ov').classList.add('on');$('sheet').classList.add('on');$('shBody').scrollTop=0;
+}
+function closeSheet(){$('ov').classList.remove('on');$('sheet').classList.remove('on');onOk=null}
+$('shCancel').onclick=closeSheet;$('ov').onclick=closeSheet;$('shOk').onclick=()=>onOk&&onOk();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('sheet').classList.contains('on'))closeSheet()});
+let toastT,undoFn;
+function toast(msg,undo){
+  $('toastTxt').textContent=msg;undoFn=undo;$('toast').classList.toggle('undo',!!undo);
+  $('toast').classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>$('toast').classList.remove('on'),undo?5000:2200);
+}
+$('toastBtn').onclick=()=>{undoFn&&undoFn();$('toast').classList.remove('on')};
+
+/* ================= formulář ================= */
+function formHtml(o,warn){
+  const seg=['hotove:Hotově','karta:Kartou','zaplaceno:Zaplaceno'].map(s=>{const [v,l]=s.split(':');return `<button type="button" data-pay="${v}" class="${o.pay===v?'on':''}">${l}</button>`}).join('');
+  return `${warn?`<div class="warn">${esc(warn)}</div>`:''}${o.photo?`<img class="prev" src="${o.photo}" alt="Fotka účtenky">`:''}
+  <div class="two"><label class="fld"><span>Číslo</span><input id="fNum" inputmode="numeric" value="${esc(o.num)}" placeholder="např. 63"></label>
+  <label class="fld"><span>Doručit v</span><input id="fAt" value="${esc(o.deliverAt)}" placeholder="např. 20:45"></label></div>
+  <label class="fld"><span>Ulice a číslo</span><input id="fStreet" value="${esc(o.street)}" placeholder="např. Dělnická 767" autocomplete="off"></label>
+  <div class="two"><label class="fld"><span>Obec</span><input id="fCity" value="${esc(o.city)}" placeholder="${esc(settings.city||'např. Dobříš')}"></label>
+  <label class="fld"><span>Telefon</span><input id="fPhone" type="tel" inputmode="tel" value="${esc(o.phone)}" placeholder="731 024 169"></label></div>
+  <label class="fld"><span>Jméno</span><input id="fName" value="${esc(o.name)}" placeholder="např. Radka Štolfová"></label>
+  <div class="fld"><span>Platba</span><div class="seg" id="fPay">${seg}</div></div>
+  <div class="two"><label class="fld"><span>Vybrat od zákazníka (Kč)</span><input id="fCollect" inputmode="decimal" value="${esc(o.collect)}" placeholder="např. 309"></label>
+  <label class="fld"><span>Cena objednávky (Kč)</span><input id="fTotal" inputmode="decimal" value="${esc(o.total)}" placeholder="např. 309"></label></div>
+  <label class="fld"><span>Poznámka</span><textarea id="fNote" placeholder="např. zvonek nefunguje, volat">${esc(o.note)}</textarea></label>
+  <label class="fld"><span>Položky</span><textarea id="fItems" style="min-height:110px" placeholder="1x Napolitana&#10;+ Žampiony">${esc(itemsToText(o.items||[]))}</textarea></label>
+  <p class="hint">Položka na řádek („1x Název“), příplatek začni „+“.</p>
+  ${o.raw?`<details><summary class="hint" style="margin:4px;min-height:44px;display:flex;align-items:center;cursor:pointer">Zobrazit přečtený text</summary><div class="raw">${esc(o.raw)}</div></details>`:''}`;
+}
+function bindForm(o){
+  $('fPay').onclick=e=>{const b=e.target.closest('button');if(!b)return;o.pay=o.pay===b.dataset.pay?'':b.dataset.pay;
+    [...$('fPay').children].forEach(x=>x.classList.toggle('on',x.dataset.pay===o.pay));
+    if(o.pay==='zaplaceno')$('fCollect').value='0'};
+}
+const num=v=>v.replace(',','.').replace(/[^\d.]/g,'');
+function readForm(o){
+  o.num=$('fNum').value.trim();o.deliverAt=$('fAt').value.trim();o.street=$('fStreet').value.trim();o.city=$('fCity').value.trim();
+  o.phone=$('fPhone').value.trim();o.name=$('fName').value.trim();o.collect=num($('fCollect').value);o.total=num($('fTotal').value);
+  o.note=$('fNote').value.trim();o.items=itemsFromLines($('fItems').value.split('\n').map(l=>l.trim()).filter(Boolean));return o;
+}
+function editOrder(o,isNew,warn){
+  const d=JSON.parse(JSON.stringify(o));
+  openSheet(isNew?'Nová objednávka':'Upravit objednávku',formHtml(d,warn),isNew?'Přidat':'Uložit',()=>{
+    readForm(d);
+    if(!d.street&&!d.phone){$('fStreet').style.borderColor='var(--red)';$('fStreet').focus();toast('Doplň adresu nebo telefon');return}
+    let tgt=d;if(isNew)orders.push(d);else{Object.assign(o,d);tgt=o}
+    save();render();closeSheet();toast(isNew?`#${d.num} přidána`:'Uloženo');
+    geocode(tgt);
+  });
+  bindForm(d);
+}
+const blank=()=>({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),created:Date.now(),status:'nova',num:'',street:'',city:'',name:'',phone:'',total:'',collect:'',pay:'',note:'',deliverAt:'',deliverDate:'',items:[],photo:'',raw:''});
+const nextNum=()=>orders.reduce((m,o)=>Math.max(m,parseInt(o.num)||0),0)+1;
+
+/* ================= focení ================= */
+let busy=false;
+async function handleFile(file){
+  if(!file||busy)return;busy=true;const o=blank();
+  openSheet('Čtu účtenku',`<div id="scanPrev"></div><div class="prog"><i id="pb"></i></div><p class="status" id="ps">Připravuji fotku…</p>`,'',null);
+  try{
+    const {canvas,thumb}=await prepImage(file);o.photo=thumb;
+    $('scanPrev').innerHTML=`<img class="prev" src="${thumb}" alt="Fotka účtenky">`;
+    progCb=m=>{const pb=$('pb'),ps=$('ps');if(!pb)return;ps.textContent=STAT[m.status]||'Pracuji…';
+      pb.style.width=(m.status==='recognizing text'?20+m.progress*80:Math.min(18,(m.progress||0)*18))+'%'};
+    const text=await ocr(canvas);o.raw=text;Object.assign(o,parseReceipt(text));geocode(o);
+    const dup=o.num&&orders.find(x=>x.num===o.num&&x.status!=='dorucena');
+    const miss=['street','phone','collect'].filter(k=>!o[k]).map(k=>({street:'adresu',phone:'telefon',collect:'částku'}[k]));
+    if(!o.num)o.num=String(nextNum());
+    editOrder(o,true,dup?`Objednávka #${o.num} už v seznamu je – zkontroluj, jestli nejde o stejnou účtenku.`:miss.length?`Nepodařilo se přečíst ${miss.join(', ')} – doplň prosím.`:'');
+  }catch(err){
+    o.num=String(nextNum());editOrder(o,true,`Účtenku se nepodařilo přečíst: ${errText(err)}. Doplň údaje ručně.`);
+  }finally{busy=false}
+}
+$('btnCam').onclick=()=>$('inCam').click();
+$('inCam').onchange=e=>{handleFile(e.target.files[0]);e.target.value=''};
+$('inGal').onchange=e=>{handleFile(e.target.files[0]);e.target.value=''};
+$('btnAdd').onclick=()=>openSheet('Přidat objednávku',`<div class="btns" style="padding:14px 0">
+  <button class="btn pri" data-add="cam">${ic('cam')}Vyfotit účtenku</button>
+  <button class="btn" data-add="gal">${ic('img')}Vybrat fotku z galerie</button>
+  <button class="btn" data-add="man">${ic('edit')}Zadat ručně</button></div>`,'',null);
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-add]');if(!t)return;const k=t.dataset.add;
+  if(k==='cam'){closeSheet();$('inCam').click()}
+  if(k==='gal'){closeSheet();$('inGal').click()}
+  if(k==='man'){const o=blank();o.num=String(nextNum());editOrder(o,true)}
+});
+
+/* ================= navigace – rovnou spustí trasu ================= */
+function navTarget(o){
+  const text=[o.street,o.city||settings.city].filter(Boolean).join(', ');
+  const ll=o.lat?`${o.lat},${o.lon}`:'';
+  const e=encodeURIComponent(ll||text);
+  const g=`https://www.google.com/maps/dir/?api=1&destination=${e}&travelmode=driving&dir_action=navigate`;
+  switch(settings.navApp){
+    case 'waze':return {url:ll?`https://waze.com/ul?ll=${ll}&navigate=yes`:`https://waze.com/ul?q=${encodeURIComponent(text)}&navigate=yes`};
+    case 'mapy':return {url:o.lat?`https://mapy.com/fnc/v1/route?end=${o.lon},${o.lat}&routeType=car_fast&navigate=true`:`https://mapy.com/fnc/v1/search?query=${encodeURIComponent(text)}`};
+    case 'apple':return {url:`https://maps.apple.com/?daddr=${e}&dirflg=d`};
+    default:return {url:g};
+  }
+}
+
+/* ================= karty ================= */
+const telHref=p=>{let d=(p||'').replace(/[^\d+]/g,'');if(/^\d{9}$/.test(d))d='+420'+d;return d};
+function timing(o){
+  if(!o.deliverAt||o.deliverAt==='ihned')return {txt:o.deliverAt==='ihned'?'ihned':'',diff:null};
+  const [h,m]=o.deliverAt.split(':').map(Number);if(isNaN(h))return {txt:o.deliverAt,diff:null};
+  const d=new Date(o.created);d.setHours(h,m,0,0);
+  if(o.deliverDate){const [dd,mm]=o.deliverDate.split('.').map(s=>parseInt(s));if(dd&&mm){d.setMonth(mm-1,dd)}}
+  const diff=Math.round((d-Date.now())/60000);
+  return {txt:o.deliverAt,diff};
+}
+function ago(t){const m=Math.floor((Date.now()-t)/60000);return m<1?'právě teď':m<60?`před ${m} min`:`před ${Math.floor(m/60)} h ${m%60} min`}
+const PAYW={hotove:'hotově',karta:'kartou',zaplaceno:'zaplaceno'};
+
+function cardHtml(o){
+  const tm=timing(o),tel=telHref(o.phone),hasAddr=!!o.street,open=opened.has(o.id);
+  const late=tm.diff!=null&&tm.diff<0&&o.status!=='dorucena';
+  const right=tm.txt?`${ic('clock')}${esc(tm.txt)}${tm.diff!=null&&o.status!=='dorucena'?` <i>|</i> <em>${tm.diff<0?tm.diff:tm.diff}</em>`:''}`:`${ic('clock')}${ago(o.created).replace('před ','')}`;
+  const collect=o.pay==='zaplaceno'?`<span class="paid">Zaplaceno</span>`:o.collect!==''&&o.collect!=null?`Vybrat <b>${kc(o.collect)}</b> ${PAYW[o.pay]||''}`:'Částka neznámá';
+  const items=(o.items||[]).map(it=>`<div class="it"><span class="q">${it.q}x</span><span>${esc(it.name)}${it.ex.map(e=>`<span class="ex">${esc(e)}</span>`).join('')}</span></div>`).join('');
+  const payRow=o.pay==='zaplaceno'?`Zaplaceno online${o.total?` · ${kc(o.total)}`:''}`:`Vybrat ${PAYW[o.pay]||''}: <b>${o.collect!==''?kc(o.collect):'?'}</b>`;
+  let bar;
+  if(o.status==='dorucena')bar=`<button class="back" data-a="nova">${ic('undo')}Vrátit</button>`;
+  else bar=`<div class="slide" data-to="${o.status==='nova'?'jedu':'dorucena'}"><span class="lbl">${o.status==='nova'?'Vyzvednuta':'Doručena'}</span><div class="knob">${ic('right')}</div></div>`;
+  return `<article class="card st-${o.status}${open?' open':''}${late?' late':''}" data-id="${o.id}">
+  <div class="strip"><b>#${esc(o.num||'–')}</b><span class="tm">${right}</span></div>
+  <div class="cbody">
+    <div class="crow"><b>${esc(o.street||'Bez adresy')}</b><span>${esc(o.city||settings.city||'')}</span></div>
+    <div class="csub">${o.name?esc(o.name)+' · ':''}${collect}</div>
+    <button class="toggle" data-a="toggle" aria-label="${open?'Skrýt':'Zobrazit'} detail" aria-expanded="${open}"><span>${ic('down')}</span></button>
+    <div class="det">
+      <div class="dr"><span class="ico">${ic('money')}</span><span>${payRow}</span></div>
+      ${o.pay!=='zaplaceno'&&o.total&&o.total!==o.collect?`<div class="dr"><span class="ico">${ic('money')}</span><span>Cena objednávky: ${kc(o.total)}</span></div>`:''}
+      ${o.phone?`<a class="dr" href="tel:${tel}"><span class="ico">${ic('phone')}</span><span>${esc(o.phone)}</span></a>`:''}
+      ${o.name?`<div class="dr"><span class="ico">${ic('user')}</span><span>${esc(o.name)}</span></div>`:''}
+      <div class="dr"><span class="ico">${ic('pin')}</span><span>${esc([o.street,o.city].filter(Boolean).join(', ')||'Bez adresy')}</span></div>
+      ${o.note?`<div class="dr"><span class="ico">${ic('note')}</span><span>${esc(o.note)}</span></div>`:''}
+      <div class="dr"><span class="ico">${ic('clock')}</span><span>${o.deliverAt?`Doručit ${esc(o.deliverDate||'')} v ${esc(o.deliverAt)} · `:''}přidáno ${ago(o.created)}</span></div>
+      ${items?`<div class="items">${items}</div>`:''}
+      <div class="tools">
+        ${o.photo?`<button class="tool" data-a="photo">${ic('img')}Účtenka</button>`:''}
+        <button class="tool" data-a="edit">${ic('edit')}Upravit</button>
+        <button class="tool red" data-a="del">${ic('trash')}Smazat</button>
+      </div>
+    </div>
+  </div>
+  <div class="bar">${bar}
+    <a class="call ${tel&&o.status!=='dorucena'?'':'off'}" href="tel:${tel}" aria-label="Zavolat zákazníkovi">${ic('phone')}</a>
+    <a class="nav ${hasAddr&&o.status!=='dorucena'?'':'off'}" href="${hasAddr?esc(navTarget(o).url):'#'}" data-a="nav" rel="noopener">${ic('nav')}Navigace</a>
+  </div>
+</article>`;
+}
+function setStatus(o,to){
+  const prev=o.status;o.status=to;if(to==='dorucena')o.done=Date.now();
+  if(navigator.vibrate)navigator.vibrate(12);
+  save();render();
+  toast(to==='jedu'?`#${o.num} vyzvednuta`:to==='dorucena'?`#${o.num} doručena`:`#${o.num} vrácena`,()=>{o.status=prev;save();render()});
+}
+$('list').addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;
+  const card=b.closest('.card'),o=orders.find(x=>x.id===card.dataset.id);if(!o)return;
+  const a=b.dataset.a;
+  if(a==='toggle'){opened.has(o.id)?opened.delete(o.id):opened.add(o.id);card.classList.toggle('open');b.setAttribute('aria-expanded',opened.has(o.id))}
+  if(a==='nav'&&!o.lat&&o.street)geocode(o).then(render);
+  if(a==='nova')setStatus(o,'nova');
+  if(a==='edit')editOrder(o,false);
+  if(a==='photo')openSheet(`Účtenka #${o.num}`,`<img class="full" src="${o.photo}" alt="Fotka účtenky">`,'',null);
+  if(a==='del'){const i=orders.indexOf(o);orders.splice(i,1);save();render();toast(`#${o.num} smazána`,()=>{orders.splice(i,0,o);save();render()})}
+});
+
+/* ================= slider na potvrzení ================= */
+let drag=null;
+$('list').addEventListener('pointerdown',e=>{
+  const knob=e.target.closest('.knob');if(!knob)return;
+  const sl=knob.parentElement;e.preventDefault();
+  sl.classList.remove('snap');knob.setPointerCapture(e.pointerId);
+  drag={sl,knob,lbl:sl.querySelector('.lbl'),x0:e.clientX,max:sl.clientWidth-knob.offsetWidth-10,x:0,id:e.pointerId};
+});
+$('list').addEventListener('pointermove',e=>{
+  if(!drag||e.pointerId!==drag.id)return;
+  drag.x=Math.max(0,Math.min(drag.max,e.clientX-drag.x0));
+  drag.knob.style.transform=`translateX(${drag.x}px)`;drag.lbl.style.opacity=String(1-drag.x/drag.max*.9);
+});
+function endDrag(e){
+  if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;d.sl.classList.add('snap');
+  if(d.x>=d.max*.82){
+    d.knob.style.transform=`translateX(${d.max}px)`;d.lbl.style.opacity='0';
+    const o=orders.find(x=>x.id===d.sl.closest('.card').dataset.id);
+    setTimeout(()=>o&&setStatus(o,d.sl.dataset.to),220);
+  }else{d.knob.style.transform='';d.lbl.style.opacity=''}
+}
+$('list').addEventListener('pointerup',endDrag);$('list').addEventListener('pointercancel',endDrag);
+
+/* ================= vykreslení ================= */
+function sortKey(o){const t=timing(o);return t.diff!=null?t.diff:1e6+(parseInt(o.num)||0)}
+function render(){
+  if(drag)return;
+  const act=orders.filter(o=>o.status!=='dorucena'),done=orders.filter(o=>o.status==='dorucena');
+  $('tabA').textContent=`Aktivní (${act.length})`;$('tabD').textContent=`Doručené (${done.length})`;
+  $('tabA').classList.toggle('on',tab==='A');$('tabD').classList.toggle('on',tab==='D');
+  const sum=(arr,p)=>arr.filter(o=>o.pay===p).reduce((s,o)=>s+(+o.collect||0),0);
+  const jedu=act.filter(o=>o.status==='jedu');
+  $('sub').textContent=act.length?`${act.length} k doručení${jedu.length?` · vezu ${jedu.length}`:''}`:'Rozvoz';
+  const src=tab==='A'?act:done;
+  $('sum').innerHTML=src.length?`<span>${tab==='A'?'Vybrat':'Vybráno'} hotově <b>${kc(sum(src,'hotove'))}</b></span><span>kartou <b>${kc(sum(src,'karta'))}</b></span>`:'';
+  let html='';
+  if(tab==='A'){
+    if(!act.length)html=`<div class="empty"><div class="tile">${ic('receipt')}</div><h2>Zatím nic k rozvozu</h2>
+      <p>Vyfoť účtenku ze Speedla a objednávka se tu objeví.</p><div class="btns">
+      <button class="btn pri" data-add="cam">${ic('cam')}Vyfotit účtenku</button><button class="btn" data-add="man">${ic('edit')}Zadat ručně</button></div></div>`;
+    const by=(a,b)=>sortKey(a)-sortKey(b);
+    if(jedu.length)html+=`<div class="sec">Vezu</div>`+jedu.sort(by).map(cardHtml).join('');
+    const n=act.filter(o=>o.status==='nova').sort(by);
+    if(n.length)html+=`<div class="sec">K vyzvednutí</div>`+n.map(cardHtml).join('');
+  }else{
+    html=done.length?done.sort((a,b)=>(b.done||0)-(a.done||0)).map(cardHtml).join('')
+      :`<div class="empty"><div class="tile">${ic('check')}</div><h2>Ještě nic doručeno</h2><p>Doručené objednávky se tu ukážou i se souhrnem peněz.</p></div>`;
+  }
+  $('list').innerHTML=html;
+}
+$('tabA').onclick=()=>{tab='A';render()};$('tabD').onclick=()=>{tab='D';render()};
+setInterval(render,30000);
+
+/* ================= směna a nastavení ================= */
+$('btnMenu').onclick=()=>{
+  const done=orders.filter(o=>o.status==='dorucena');
+  const s=p=>done.filter(o=>o.pay===p).reduce((a,o)=>a+(+o.collect||0),0);
+  const paid=done.filter(o=>o.pay==='zaplaceno').reduce((a,o)=>a+(+o.total||0),0);
+  const apps=['mapy:Mapy.com','google:Google','waze:Waze','apple:Apple'].map(x=>{const [v,l]=x.split(':');return `<button type="button" data-v="${v}" class="${settings.navApp===v?'on':''}">${l}</button>`}).join('');
+  openSheet('Směna',`<div class="sec" style="margin:4px 4px 8px">Souhrn doručených</div>
+  <div class="group">
+    <div class="gr"><span>Doručeno objednávek</span><b>${done.length}</b></div>
+    <div class="gr"><span>Hotovost k odevzdání</span><b>${kc(s('hotove'))}</b></div>
+    <div class="gr"><span>Kartou</span><b>${kc(s('karta'))}</b></div>
+    <div class="gr"><span>Zaplaceno online</span><b>${kc(paid)}</b></div>
+  </div>
+  <div class="sec" style="margin:18px 4px 8px">Nastavení</div>
+  <div class="fld"><span>Navigovat přes</span><div class="seg" id="sNav">${apps}</div></div>
+  <p class="hint">Tlačítko Navigace rovnou spustí trasu v této aplikaci.</p>
+  <label class="fld"><span>Výchozí obec</span><input id="sCity" value="${esc(settings.city)}" placeholder="např. Dobříš"></label>
+  <p class="hint">Doplní se k adrese, když na účtence obec chybí.</p>
+  <button class="btn danger" id="sReset" style="margin-top:14px">${ic('trash')}Ukončit směnu a smazat vše</button>`,'Hotovo',()=>{
+    settings.city=$('sCity').value.trim();saveSettings();render();closeSheet();
+  });
+  $('sNav').onclick=e=>{const b=e.target.closest('button');if(!b)return;settings.navApp=b.dataset.v;saveSettings();[...$('sNav').children].forEach(x=>x.classList.toggle('on',x===b))};
+  let armed=false;
+  $('sReset').onclick=()=>{
+    if(!orders.length){closeSheet();return}
+    if(!armed){armed=true;$('sReset').innerHTML=`${ic('trash')}Opravdu smazat ${orders.length} objednávek?`;return}
+    const backup=orders;orders=[];save();render();closeSheet();toast('Směna ukončena',()=>{orders=backup;save();render()});
+  };
+};
+
+// převzetí dat ze staré verze
+try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
+render();
+(async()=>{for(const o of orders.filter(o=>o.street&&!o.geoQ&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
+window.__app={parseReceipt,prepImage};
+}
+</script>
+</body>
+</html>
