@@ -5,186 +5,296 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Martini">
-<meta name="theme-color" content="#20212B">
+<meta name="theme-color" content="#0B0E17">
 <title>Martini rozvoz</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E84C2B'/%3E%3Cpath d='M12 22h24l8 10h8v10H12z' fill='white'/%3E%3Ccircle cx='22' cy='44' r='5' fill='%23E84C2B' stroke='white' stroke-width='3'/%3E%3Ccircle cx='44' cy='44' r='5' fill='%23E84C2B' stroke='white' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23E84C2B'/%3E%3Cpath d='M36 64h66l24 28h20v28H36z' fill='white'/%3E%3Ccircle cx='62' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3Ccircle cx='124' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
+/* Martini rozvoz – tmavý vzhled inspirovaný kurýrními appkami, akcent červená */
 :root{
-  --top:#20212B; --red:#E84C2B; --red-ink:#C2381B; --blue:#4A9BE0; --green:#5BC25A; --green-ink:#2E8B2D;
-  --bg:#F4F4F6; --card:#fff; --line:rgba(60,60,67,.14); --field:rgba(60,60,67,.2);
-  --soft:rgba(118,118,128,.12); --ink:#111; --muted:rgba(60,60,67,.66);
+  --bg:#0B0E17; --card:#161A27; --card2:#1E2332; --top:#0B0E17;
+  --red:#E8402B; --red-ink:#FF7A66; --red-deep:#B8301F; --blue:#3D8FD9; --green:#4DB84C; --green-ink:#2E8B2D;
+  --line:rgba(255,255,255,.08); --field:#2B3146; --soft:rgba(255,255,255,.08);
+  --ink:#EDEAE5; --muted:#8E93AB; --faint:#5C6178;
   --ease:cubic-bezier(.32,.72,0,1);
+  --head:"Nunito",-apple-system,system-ui,sans-serif;
+  color-scheme:dark;
 }
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:17px/1.4 "Fira Sans",-apple-system,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+html,body{margin:0;background:var(--bg)}
+body{color:var(--ink);font:17px/1.4 "Inter",-apple-system,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
 button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer;touch-action:manipulation;border:0;background:none;padding:0}
 a{color:inherit}
 svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
-:focus-visible{outline:3px solid rgba(74,155,224,.6);outline-offset:2px}
+:focus-visible{outline:3px solid rgba(232,64,43,.6);outline-offset:2px}
+button:active,a:active{transform:scale(.97);transition:transform .1s}
 
-/* horní lišta jako Rozvezto */
-.top{position:sticky;top:0;z-index:20;background:var(--top);color:#fff;padding:calc(env(safe-area-inset-top) + 4px) 8px 6px;display:flex;align-items:center;gap:8px}
-.top .ham{width:44px;height:44px;display:grid;place-items:center;border-radius:12px}
-.top .ham svg{width:28px;height:28px}
-.brand{flex:1;line-height:1.15}
-.brand b{display:block;font-size:20px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}
-.brand span{display:block;font-size:13px;color:rgba(255,255,255,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top .plus{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;background:rgba(255,255,255,.12)}
-.top .cam{height:44px;padding:0 16px 0 12px;border-radius:999px;display:flex;align-items:center;gap:8px;background:var(--red);font-weight:600;font-size:17px;box-shadow:0 4px 14px rgba(232,76,43,.45)}
-.top .cam svg{width:24px;height:24px}
-button:active{transform:scale(.97);transition:transform .1s}
+/* horní lišta */
+.top{position:sticky;top:0;z-index:20;background:var(--top);padding:calc(env(safe-area-inset-top) + 6px) 10px 6px;display:flex;align-items:center;gap:8px}
+.rbtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--card);flex:none}
+.rbtn svg{width:24px;height:24px}
+.brand{flex:1;line-height:1.15;padding-left:4px}
+.brand b{display:block;font:900 22px/1.1 var(--head);letter-spacing:-.01em;white-space:nowrap}
+.brand span{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(77,184,76,.2)}
+.cam{height:46px;padding:0 16px 0 13px;border-radius:999px;display:flex;align-items:center;gap:8px;background:var(--red);color:#fff;font-weight:700;font-size:17px;box-shadow:0 6px 18px rgba(232,64,43,.35)}
+.cam svg{width:24px;height:24px}
 
-.tabs{display:flex;align-items:stretch;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top) + 54px);z-index:19;padding-right:10px}
-.tabs button{height:42px;padding:0 12px;font-size:15px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
-.tabs button.on{color:var(--ink);border-color:var(--red)}
-.tabs .route{display:flex;align-items:center;gap:4px;padding:0 8px;border:0;color:var(--muted);font-weight:600}
-.tabs .route svg{width:18px;height:18px}
-.tabs .route.on{color:#fff;background:var(--red);border-radius:999px;height:30px;margin:6px 0;padding:0 10px}
-.stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#111;font-weight:700;font-size:14px;display:grid;place-items:center;flex:none;margin-right:-2px}
+/* záložky */
+.tabs{display:flex;align-items:center;gap:6px;background:var(--top);padding:4px 10px 8px;position:sticky;top:calc(env(safe-area-inset-top) + 58px);z-index:19}
+.tabs .tb{height:34px;padding:0 11px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted);background:var(--card);white-space:nowrap}
+.tabs .tb.on{background:var(--ink);color:#0B0E17}
+.tabs .route{display:flex;align-items:center;justify-content:center;gap:4px;height:34px;width:34px;padding:0;border-radius:999px;color:var(--muted);font-weight:600;font-size:15px;background:var(--card)}
+.tabs .route svg{width:17px;height:17px}
+.tabs .route.on{color:#fff;background:var(--red)}
+.sum{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:15px;white-space:nowrap;flex:none}
+.sum b{color:#7CDB7B;font-weight:700}
+.sum svg{width:19px;height:19px;color:#7CDB7B}
+@media(max-width:370px){.tabs .tb{padding:0 9px}.tabs{gap:4px;padding-left:8px;padding-right:8px}.sum svg{display:none}}
+@media(max-width:330px){.tabs .tb{font-size:13px;padding:0 8px}.sum{font-size:14px}}
+main{max-width:640px;margin:0 auto;padding-top:2px}
+.stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#111;font-weight:800;font-size:14px;display:grid;place-items:center;flex:none;margin-right:-2px}
 .eta{font-size:14px;color:var(--muted);white-space:nowrap;flex:none}
 .eta b{color:var(--ink);font-weight:600}
-.rinfo{display:flex;align-items:center;gap:6px;margin:0 10px 6px;font-size:13px;color:var(--muted)}
+.rinfo{display:flex;align-items:center;gap:6px;margin:2px 12px 8px;font-size:13px;color:var(--muted)}
 .rinfo svg{width:15px;height:15px}
-@media(max-width:350px){.tabs .route span{display:none}.tabs button{padding:0 8px}}
-.sum{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:15px;color:var(--muted);white-space:nowrap}
-.sum b{color:#1E7A1D;font-weight:700}
-.sum svg{width:20px;height:20px;color:#1E7A1D}
-main{max-width:640px;margin:0 auto}
-.sec{font-size:14px;font-weight:600;color:var(--muted);margin:10px 14px 6px;text-transform:uppercase;letter-spacing:.04em}
-main{padding-top:6px}
+.rinfo b{color:var(--ink)}
 
-/* karta – kompaktní, 5 na obrazovku */
-.card{background:var(--card);margin:0 6px 6px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+/* karta objednávky */
+.card{background:var(--card);margin:0 8px 8px;border-radius:18px;overflow:hidden}
 .strip{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 12px;color:#fff;background:var(--blue)}
 .pay-hotove .strip{background:var(--red)} .st-dorucena .strip{background:var(--green-ink)}
 .strip .veze{width:20px;height:20px;margin-left:-4px;opacity:.95}
-.strip b{font-size:20px;font-weight:600;min-width:46px}
-.cash{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 9px;border-radius:9px;background:#fff;color:#1E7A1D;font-size:18px;font-weight:700;white-space:nowrap}
+.strip b{font-size:20px;font-weight:700;min-width:46px}
+.cash{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 9px;border-radius:9px;background:#fff;color:#1E7A1D;font-size:18px;font-weight:800;white-space:nowrap}
 .cash svg{width:20px;height:20px;stroke-width:2.2}
 .cash.kart{color:#0B5CAD}
 .cash.paid{background:rgba(255,255,255,.22);color:#fff;font-size:15px;font-weight:600}
 .cash.unk{background:rgba(255,255,255,.22);color:#fff;font-size:15px}
-.strip .tm{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:17px;font-weight:500;white-space:nowrap}
+.strip .tm{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:17px;font-weight:600;white-space:nowrap}
 .strip .tm svg{width:18px;height:18px}
-.strip .tm em{font-style:normal;font-weight:600;font-size:15px;background:rgba(255,255,255,.22);border-radius:7px;padding:1px 6px}
-.late .strip .tm em{background:#fff;color:var(--red-ink)}
+.strip .tm em{font-style:normal;font-weight:700;font-size:15px;background:rgba(255,255,255,.22);border-radius:7px;padding:1px 6px}
+.late .strip .tm em{background:#fff;color:var(--red-deep)}
 .cbody{display:flex;align-items:center;gap:8px;padding:0 4px 0 12px;min-height:44px}
 .addr{flex:1;display:flex;align-items:baseline;gap:8px;overflow:hidden;white-space:nowrap}
-.addr b{font-size:18px;font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.addr b{font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis}
 .addr span{font-size:14px;color:var(--muted);flex:none}
 .toggle{width:44px;height:44px;display:grid;place-items:center;flex:none}
-.toggle span{width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;transition:transform .3s var(--ease)}
+.toggle span{width:30px;height:30px;border-radius:50%;background:var(--card2);color:var(--ink);display:grid;place-items:center;transition:transform .3s var(--ease)}
 .open .toggle span{transform:rotate(180deg)}
 .toggle svg{width:18px;height:18px;stroke-width:3}
-.det{display:none;padding:2px 12px 8px}
+.det{display:none;padding:2px 12px 10px}
 .open .det{display:block}
-.dr{display:flex;align-items:center;gap:12px;padding:4px 0;font-size:16px;text-decoration:none}
-.dr .ico{width:28px;height:28px;border-radius:50%;border:2px solid var(--red);color:var(--red);display:grid;place-items:center;flex:none}
-.dr .ico svg{width:15px;height:15px}
-.dr b{font-weight:600}
+.dr{display:flex;align-items:center;gap:12px;padding:5px 0;font-size:16px;text-decoration:none}
+.dr .ico{width:30px;height:30px;border-radius:50%;background:var(--card2);color:var(--red-ink);display:grid;place-items:center;flex:none}
+.dr .ico svg{width:16px;height:16px}
+.dr b{font-weight:700}
 a.dr{color:var(--ink)}
-.items{border-top:1px solid var(--line);margin:6px -12px 0;padding:6px 12px 0}
+.items{border-top:1px solid var(--line);margin:8px -12px 0;padding:8px 12px 0}
 .it{display:flex;gap:12px;padding:3px 0;font-size:16px}
-.it .q{width:26px;flex:none}
+.it .q{width:26px;flex:none;color:var(--muted)}
 .it .ex{display:block;margin-left:-14px;color:var(--muted);font-size:15px}
 .it .ex::before{content:"+ "}
-.tools{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.tool{height:38px;padding:0 12px;border-radius:10px;background:var(--soft);display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}
+.tools{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.tool{height:38px;padding:0 12px;border-radius:999px;background:var(--card2);display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600}
 .tool svg.i{width:17px;height:17px}
 .tool.red{color:var(--red-ink)}
-
-/* spodní lišta karty: slider + volat + navigace */
 .bar{display:flex;border-top:1px solid var(--line);height:46px}
 .bar>*{height:100%}
-.call,.nav{display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:500;text-decoration:none;color:var(--ink);background:#fff}
+.call,.nav{display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600;text-decoration:none;color:var(--ink);background:var(--card)}
 .call{width:52px;flex:none;border-left:1px solid var(--line)}
 .nav{flex:1;border-left:1px solid var(--line)}
 .call svg,.nav svg{width:20px;height:20px}
-.call.off,.nav.off{opacity:.35;pointer-events:none}
-.back{flex:1.3;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:500;background:var(--soft)}
+.call.off,.nav.off{opacity:.3;pointer-events:none}
+.back{flex:1.3;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600;background:var(--card2)}
 .slide{flex:1.3;position:relative;background:var(--green);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
 .st-jedu .slide{background:#3DA53C}
-.slide .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-left:42px;color:#fff;font-size:15px;font-weight:600;pointer-events:none;white-space:nowrap}
+.slide .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-left:42px;color:#fff;font-size:15px;font-weight:700;pointer-events:none;white-space:nowrap}
 .slide .lbl::after{content:"›››";margin-left:5px;letter-spacing:-1px;opacity:.7;animation:hint 1.6s infinite}
 @keyframes hint{50%{opacity:.25}}
-.slide .knob{position:absolute;left:4px;top:4px;bottom:4px;width:40px;border-radius:11px;background:#fff;color:var(--green-ink);display:grid;place-items:center;box-shadow:0 2px 5px rgba(0,0,0,.18);cursor:grab}
+.slide .knob{position:absolute;left:4px;top:4px;bottom:4px;width:40px;border-radius:11px;background:#fff;color:var(--green-ink);display:grid;place-items:center;box-shadow:0 2px 5px rgba(0,0,0,.25);cursor:grab}
 .slide .knob svg{width:22px;height:22px;stroke-width:2.6}
 .slide.snap .knob{transition:transform .35s var(--ease)} .slide.snap .lbl{transition:opacity .35s}
 
-.empty{text-align:center;padding:48px 24px;color:var(--muted)}
-.empty .tile{width:72px;height:72px;border-radius:20px;background:var(--soft);display:grid;place-items:center;margin:0 auto 14px}
+.empty{text-align:center;padding:40px 24px;color:var(--muted)}
+.empty .tile{width:76px;height:76px;border-radius:50%;background:var(--card);display:grid;place-items:center;margin:0 auto 16px;color:var(--red-ink)}
 .empty .tile svg{width:34px;height:34px}
-.empty h2{color:var(--ink);font-size:22px;font-weight:600;margin:0 0 6px}
-.empty p{margin:0 0 18px;font-size:15px}
-.btns{display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto}
-.btn{height:52px;border-radius:14px;font-weight:600;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--soft);width:100%}
+.empty h2{color:var(--ink);font:900 28px/1.1 var(--head);margin:0 0 8px}
+.empty p{margin:0 0 20px;font-size:16px}
+.btns{display:flex;flex-direction:column;gap:10px;max-width:340px;width:100%;margin:0 auto}
+.btn{height:56px;border-radius:999px;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card2);width:100%;color:var(--ink);text-decoration:none}
 .btn.pri{background:var(--red);color:#fff}
-.btn.danger{background:#FDECEA;color:var(--red-ink)}
+.btn.danger{background:rgba(232,64,43,.14);color:var(--red-ink)}
+.btn[disabled]{opacity:.4}
 
-/* sheet */
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:40;opacity:0;pointer-events:none;transition:opacity .3s}
+/* mapa */
+#mapWrap{display:none;position:relative;height:calc(100dvh - env(safe-area-inset-top) - 112px);margin:0 8px;border-radius:22px;overflow:hidden;background:#141826}
+#mapWrap.on{display:block}
+#map{position:absolute;inset:0}
+.leaflet-container{background:#141826;font:inherit}
+.leaflet-control-attribution{background:rgba(11,14,23,.7)!important;color:#8E93AB!important;font-size:10px}
+.leaflet-control-attribution a{color:#B5B9CC!important}
+.leaflet-bar a{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+.mk{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;color:#fff;font-weight:800;font-size:15px;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.5)}
+.mk.cashm{background:var(--red)} .mk.cardm{background:var(--blue)}
+.mk.me{width:22px;height:22px;background:#4AA8FF;border-width:4px;box-shadow:0 0 0 8px rgba(74,168,255,.25)}
+.mk.piz{width:38px;height:38px;background:#fff;color:var(--red);border-color:var(--red)}
+.mk.piz svg{width:20px;height:20px}
+.mapcard{position:absolute;left:10px;right:10px;bottom:10px;z-index:500;background:rgba(22,26,39,.96);border-radius:22px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.mapcard .big{font:900 34px/1 var(--head);letter-spacing:-.01em}
+.mapcard .lbl2{color:var(--muted);font-size:14px;margin:4px 0 12px}
+.mapcard .row{display:flex;gap:8px}
+.mapcard .btn{height:50px;font-size:16px}
+.mapmsg{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px}
+
+/* boční menu */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;opacity:0;pointer-events:none;transition:opacity .3s}
 .ov.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:92dvh;display:flex;flex-direction:column;background:#F7F7FA;border-radius:26px 26px 0 0;
-  transform:translateY(105%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden;box-shadow:0 -8px 32px rgba(0,0,0,.15);max-width:640px;margin:0 auto}
+.drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,380px);z-index:45;background:#121624;transform:translateX(-102%);transition:transform .35s var(--ease);overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) 0 calc(20px + env(safe-area-inset-bottom))}
+.drawer.on{transform:none}
+.promo{width:calc(100% - 32px);text-align:left;color:#fff;margin:4px 16px 10px;border-radius:18px;padding:16px 18px;background:linear-gradient(120deg,#7A1E12,#E8402B);font-weight:700;font-size:18px;line-height:1.25;display:flex;align-items:center;gap:12px}
+.promo small{display:block;font-weight:500;font-size:14px;opacity:.85;margin-top:2px}
+.mi{display:flex;align-items:center;gap:18px;width:100%;padding:0 18px;min-height:68px;text-align:left;font-size:20px}
+.mi svg{width:28px;height:28px;color:var(--ink)}
+.mi .t{flex:1;display:flex;flex-direction:column;border-bottom:1px solid var(--line);min-height:68px;justify-content:center}
+.mi .t small{font-size:16px;color:var(--muted)}
+.mi .t small.on{color:#7CDB7B}
+.mi:last-child .t{border:0}
+
+/* stránky z menu */
+.page{position:fixed;inset:0;z-index:50;background:var(--bg);transform:translateX(102%);transition:transform .35s var(--ease),visibility 0s .35s;visibility:hidden;overflow:auto;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+.page.on{transform:none;visibility:visible;transition:transform .35s var(--ease)}
+.phead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:var(--bg)}
+.phead .ttl{font:900 22px/1 var(--head);opacity:0;transition:opacity .2s}
+.page.scrolled .phead{background:#151927}
+.page.scrolled .phead .ttl{opacity:1}
+.pbody{padding:6px 20px 0;max-width:640px;margin:0 auto}
+.h1{font:900 42px/1.05 var(--head);letter-spacing:-.015em;margin:4px 0 18px}
+.h2{font:900 26px/1.15 var(--head);margin:28px 0 12px}
+.lead{font-size:18px;color:var(--ink);margin:0 0 6px}
+.note2{font-size:14px;color:var(--muted)}
+.bigcard{border-radius:22px;padding:22px;background:linear-gradient(135deg,#E8402B,#A8291A);color:#fff;position:relative;overflow:hidden}
+.bigcard .n{font:900 64px/1 var(--head)}
+.bigcard .l{font-weight:800;font-size:20px;margin-top:6px}
+.bigcard svg.deco{position:absolute;right:-10px;bottom:-14px;width:150px;height:150px;opacity:.18;stroke-width:1.5}
+.panel{background:var(--card);border-radius:22px;padding:20px}
+.cap{font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.money{font:900 46px/1.05 var(--head);margin:6px 0 14px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:16px}
+.kv span:first-child{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:14px;letter-spacing:.03em}
+.kv b{white-space:nowrap;font-weight:700}
+.info{display:flex;gap:14px;align-items:flex-start;margin:16px 0 4px;font-size:17px}
+.info svg{color:#7DB8F0;width:24px;height:24px;margin-top:1px}
+.info.warn2 svg{color:#FF8A75}
+.gauge{display:block;margin:6px auto 0;width:220px;height:130px}
+.ring{display:block;margin:6px auto 0;width:190px;height:190px}
+.bars{display:flex;align-items:flex-end;gap:5px;height:120px;padding:10px 0 0}
+.bars i{flex:1;background:#2B3146;border-radius:6px 6px 3px 3px;min-height:6px;position:relative}
+.bars i.hot{background:var(--red)}
+.bars i span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);font-style:normal}
+.tx{display:flex;align-items:center;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.tx .a{flex:1}
+.tx .a b{display:block;font-size:18px;font-weight:700}
+.tx .a span{display:block;color:var(--muted);font-size:15px}
+.tx .v{font-size:18px;font-weight:600;white-space:nowrap}
+.tx .v.plus{color:#7CDB7B}
+.dayh{font:900 22px/1.2 var(--head);margin:22px 0 4px}
+.srow{display:flex;align-items:center;gap:14px;min-height:66px;border-bottom:1px solid var(--line);width:100%;text-align:left;font-size:19px}
+.srow .t{flex:1}
+.srow .t small{display:block;font-size:15px;color:var(--muted)}
+.srow .val{color:var(--muted)}
+.srow svg.chev{width:20px;height:20px;color:var(--muted)}
+.prof .lab{color:var(--muted);font-size:16px;margin-top:18px}
+.prof .val{font-size:22px}
+
+/* hodnocení */
+.fb{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) 20px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden}
+.fb.on{transform:none;visibility:visible;transition:transform .4s var(--ease)}
+.fb .x{align-self:flex-end;width:48px;height:48px;display:grid;place-items:center}
+.fb .x svg{width:30px;height:30px}
+.stars{display:flex;justify-content:space-between;margin:34px 0 10px}
+.stars button{width:60px;height:60px;display:grid;place-items:center;color:var(--red-ink)}
+.stars svg{width:50px;height:50px;stroke-width:1.8}
+.stars button.on svg{fill:var(--red-ink)}
+.starl{display:flex;justify-content:space-between;color:var(--muted);font-size:15px}
+.fb textarea{margin-top:34px;width:100%;min-height:64px;border-radius:999px;border:2px solid #33395A;background:transparent;padding:18px 24px;font-size:18px;resize:none;outline:none}
+.fb textarea:focus{border-color:var(--red)}
+.fb .grow{flex:1}
+
+/* sheet (formuláře) */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:55;max-height:92dvh;display:flex;flex-direction:column;background:#121624;border-radius:26px 26px 0 0;
+  transform:translateY(105%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden;box-shadow:0 -8px 32px rgba(0,0,0,.4);max-width:640px;margin:0 auto}
 .sheet.on{transform:none;visibility:visible;transition:transform .4s var(--ease)}
+#ov{z-index:54}
 .sh-head{display:flex;align-items:center;justify-content:space-between;padding:8px 6px 2px;position:relative}
-.sh-head::before{content:"";position:absolute;top:6px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:9px;background:rgba(60,60,67,.3)}
-.sh-head h3{margin:14px 0 4px;font-size:17px;font-weight:600}
+.sh-head::before{content:"";position:absolute;top:6px;left:50%;width:38px;height:5px;margin-left:-19px;border-radius:9px;background:rgba(255,255,255,.2)}
+.sh-head h3{margin:14px 0 4px;font-size:17px;font-weight:700}
 .sh-head button{height:44px;padding:0 12px;font-size:17px;color:var(--red-ink);margin-top:10px;min-width:84px}
-.sh-head .save{font-weight:700}
+.sh-head .save{font-weight:800}
 .sh-body{overflow:auto;padding:8px 16px calc(24px + env(safe-area-inset-bottom))}
 .fld{display:block;margin-bottom:12px}
 .fld>span{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 4px 5px}
-.fld input,.fld textarea{width:100%;border:1px solid var(--field);background:#fff;border-radius:12px;padding:12px;font-size:16px;outline:none}
+.fld input,.fld textarea{width:100%;border:1px solid var(--field);background:var(--card);border-radius:14px;padding:12px;font-size:16px;outline:none}
 .fld textarea{min-height:80px;resize:vertical}
-.fld input:focus,.fld textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,76,43,.15)}
+.fld input:focus,.fld textarea:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(232,64,43,.2)}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
-.seg{display:flex;background:var(--soft);border-radius:999px;padding:3px}
-.seg button{flex:1;height:40px;border-radius:999px;font-size:15px;font-weight:500;color:var(--muted)}
-.seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.seg{display:flex;background:var(--card);border-radius:999px;padding:3px}
+.seg button{flex:1;height:40px;border-radius:999px;font-size:15px;font-weight:600;color:var(--muted)}
+.seg button.on{background:var(--ink);color:#0B0E17}
 .hint{font-size:13px;color:var(--muted);margin:-6px 4px 12px}
-.prev{display:block;width:100%;max-height:220px;object-fit:contain;border-radius:16px;background:#e6e6eb;margin-bottom:12px}
-.prog{height:10px;border-radius:9px;background:var(--soft);overflow:hidden;margin:6px 0 8px}
+.prev{display:block;width:100%;max-height:220px;object-fit:contain;border-radius:16px;background:var(--card);margin-bottom:12px}
+.prog{height:10px;border-radius:9px;background:var(--card);overflow:hidden;margin:6px 0 8px}
 .prog i{display:block;height:100%;width:0;background:var(--red);border-radius:9px;transition:width .3s}
 .status{font-size:15px;color:var(--muted);text-align:center}
-.group{background:#fff;border-radius:18px;overflow:hidden;margin-bottom:14px}
-.gr{display:flex;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);font-size:16px}
-.gr:last-child{border:0}
-.gr b{white-space:nowrap;font-weight:600}
-.raw{font-size:13px;white-space:pre-wrap;color:var(--muted);background:#fff;border-radius:12px;padding:10px;max-height:220px;overflow:auto}
+.raw{font-size:13px;white-space:pre-wrap;color:var(--muted);background:var(--card);border-radius:12px;padding:10px;max-height:220px;overflow:auto}
 .full{width:100%;border-radius:16px}
-.warn{background:#FFF4E5;color:#8A4B00;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+.warn{background:rgba(255,166,0,.12);color:#FFC46B;border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:12px}
 
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,160%);z-index:60;background:rgba(28,28,30,.94);color:#fff;
-  border-radius:999px;padding:10px 18px;display:flex;align-items:center;gap:12px;font-size:15px;transition:transform .35s var(--ease);max-width:calc(100% - 32px);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,160%);z-index:90;background:#EDEAE5;color:#0B0E17;
+  border-radius:999px;padding:11px 18px;display:flex;align-items:center;gap:12px;font-size:15px;font-weight:600;transition:transform .35s var(--ease);max-width:calc(100% - 32px);white-space:nowrap}
 .toast:not(.on){visibility:hidden;transition:transform .35s var(--ease),visibility 0s .35s}
 .toast.on{transform:translate(-50%,0)}
-.toast button{color:#FF9B85;font-weight:700;height:32px;display:none}
+.toast button{color:var(--red-deep);font-weight:800;height:32px;display:none}
 .toast.undo button{display:block}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:opacity .2s!important}}
 </style>
 </head>
 <body>
 <header class="top">
-  <button class="ham" id="btnMenu" aria-label="Směna a nastavení"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
-  <div class="brand"><b>Martini</b><span id="sub">Rozvoz</span></div>
-  <button class="plus" id="btnAdd" aria-label="Přidat z galerie nebo ručně"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button class="rbtn" id="btnMenu" aria-label="Menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <div class="brand"><b>Martini</b><span id="sub"><i class="dot" id="dot"></i><em id="subT" style="font-style:normal">Rozvoz</em></span></div>
+  <button class="rbtn" id="btnAdd" aria-label="Přidat z galerie nebo ručně"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
   <button class="cam" id="btnCam" aria-label="Vyfotit účtenku"><svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Foto</button>
 </header>
 <input type="file" id="inCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="inGal" accept="image/*" hidden>
-<nav class="tabs"><button id="tabA" class="on">Aktivní</button><button id="tabD">Doručené</button><button id="btnRoute" class="route" aria-pressed="false" title="Seřadit podle trasy"></button><div class="sum" id="sum"></div></nav>
+<nav class="tabs"><button id="tabA" class="tb on">Seznam</button><button id="tabM" class="tb">Mapa</button><button id="tabD" class="tb">Doručené</button><button id="btnRoute" class="route" aria-pressed="false" title="Seřadit podle trasy"></button><div class="sum" id="sum"></div></nav>
 <main>
   <div id="list"></div>
 </main>
+<div id="mapWrap"><div id="map"></div><div class="mapmsg" id="mapMsg" hidden></div><div class="mapcard" id="mapCard" hidden></div></div>
+
+<div class="ov" id="ovD"></div>
+<aside class="drawer" id="drawer" aria-label="Menu"></aside>
+<section class="page" id="page" role="dialog" aria-modal="true"><div class="phead"><button class="rbtn" id="pBack" aria-label="Zpět"><svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><span class="ttl" id="pTtl"></span></div><div class="pbody" id="pBody"></div></section>
+<section class="fb" id="fb" role="dialog" aria-modal="true" aria-labelledby="fbT">
+  <button class="x" id="fbX" aria-label="Zavřít"><svg class="i" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  <h1 class="h1" id="fbT">Zpětná vazba</h1>
+  <p class="lead">Jak se ti dnes s appkou jezdí? Jsi spokojený/á?</p>
+  <div class="stars" id="fbStars"></div>
+  <div class="starl"><span>Ne, vůbec</span><span>Ano, velmi</span></div>
+  <textarea id="fbC" rows="1" placeholder="Přidat komentář"></textarea>
+  <div class="grow"></div>
+  <div class="btns" style="max-width:none"><button class="btn pri" id="fbSend" disabled>Odeslat</button><button class="btn" id="fbSkip" style="color:var(--red-ink)">Přeskočit zpětnou vazbu</button></div>
+</section>
 
 <div class="ov" id="ov"></div>
 <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
@@ -194,10 +304,11 @@ a.dr{color:var(--ink)}
 <div class="toast" id="toast"><span id="toastTxt"></span><button id="toastBtn">Zpět</button></div>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-23.7';
+const APP_VERSION='2026-11-24.1';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -226,6 +337,16 @@ const P={
   img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
   truck:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.6a1 1 0 0 0-.2-.6l-3.5-4.4a1 1 0 0 0-.8-.4H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
   route:'<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+  store:'<path d="M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/>',
+  trend:'<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+  bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>',
+  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  chat:'<path d="M21 11.5a8.4 8.4 0 0 1-12.2 7.5L3 21l2-5.6A8.4 8.4 0 1 1 21 11.5z"/>',
+  help:'<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  star:'<polygon points="12 2 15.1 8.3 22 9.3 17 14.1 18.2 21 12 17.8 5.8 21 7 14.1 2 9.3 8.9 8.3 12 2"/>',
   bill:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
   ccard:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
   money:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
@@ -480,7 +601,7 @@ function editOrder(o,isNew,warn){
   openSheet(isNew?'Nová objednávka':'Upravit objednávku',formHtml(d,warn),isNew?'Přidat':'Uložit',()=>{
     readForm(d);
     if(!d.street&&!d.phone){$('fStreet').style.borderColor='var(--red)';$('fStreet').focus();toast('Doplň adresu nebo telefon');return}
-    let tgt=d;if(isNew)orders.push(d);else{Object.assign(o,d);tgt=o}
+    let tgt=d;if(isNew){orders.push(d);if(!settings.shiftStart){settings.shiftStart=Date.now();saveSettings()}}else{Object.assign(o,d);tgt=o}
     save();render();closeSheet();toast(isNew?`#${d.num} přidána`:'Uloženo');
     geocode(tgt);
   });
@@ -539,7 +660,7 @@ document.addEventListener('click',e=>{
 let myPos=null,geoOn=false;
 function startGeo(){
   if(geoOn||!ONWEB||!navigator.geolocation)return;geoOn=true;
-  navigator.geolocation.watchPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude};if(settings.sort==='route'&&(!routePos||hav(routePos,myPos)>300))scheduleRoute()},()=>{geoOn=false},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
+  navigator.geolocation.watchPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude};if(tab==='M')updateMe();if((settings.sort==='route'||tab==='M')&&(!routePos||hav(routePos,myPos)>300))scheduleRoute()},()=>{geoOn=false},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
 }
 const fx=n=>(+n).toFixed(6);
 
@@ -583,7 +704,7 @@ function plan(M,dues,now){ // dues[i] = čas „doručit v“ v ms nebo null; 0 
 }
 function dueOf(o){const tm=timing(o);return tm.diff==null?null:Date.now()+tm.diff*60000}
 async function computeRoute(){
-  if(settings.sort!=='route')return;
+  if(settings.sort!=='route'&&tab!=='M')return;
   if(routeBusy){scheduleRoute();return}
   const act=orders.filter(o=>o.status!=='dorucena'&&o.lat);
   if(!act.length){route=null;render();return}
@@ -599,7 +720,7 @@ async function computeRoute(){
 }
 function scheduleRoute(){clearTimeout(routeT);routeT=setTimeout(computeRoute,400)}
 const hhmm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
-setInterval(()=>{if(settings.sort==='route')computeRoute()},120000);
+setInterval(()=>{if(settings.sort==='route'||tab==='M')computeRoute()},120000);
 function navTarget(o){
   const text=[o.street,o.city||settings.city].filter(Boolean).join(', ');
   const ll=o.lat?`${o.lat},${o.lon}`:'';
@@ -719,13 +840,15 @@ function sortKey(o){const t=timing(o);return t.diff!=null?t.diff:1e6+(parseInt(o
 function render(){
   if(drag)return;
   const act=orders.filter(o=>o.status!=='dorucena'),done=orders.filter(o=>o.status==='dorucena');
-  $('tabA').textContent=`Aktivní ${act.length}`;$('tabD').textContent=`Doručené ${done.length}`;
-  $('tabA').classList.toggle('on',tab==='A');$('tabD').classList.toggle('on',tab==='D');
-  const rb=$('btnRoute');rb.classList.toggle('on',settings.sort==='route');rb.setAttribute('aria-pressed',settings.sort==='route');rb.innerHTML=ic('route')+'<span>Trasa</span>';rb.style.display=tab==='A'?'':'none';
+  $('tabA').textContent=`Seznam ${act.length}`;$('tabD').textContent=`Hotovo ${done.length}`;
+  ['A','M','D'].forEach(t=>$('tab'+t).classList.toggle('on',tab===t));
+  document.querySelector('main').style.display=tab==='M'?'none':'';$('mapWrap').classList.toggle('on',tab==='M');
+  const rb=$('btnRoute');rb.classList.toggle('on',settings.sort==='route');rb.setAttribute('aria-pressed',settings.sort==='route');rb.innerHTML=ic('route');rb.setAttribute('aria-label','Seřadit podle trasy');rb.style.display=tab==='A'?'':'none';
   const sum=(arr,p)=>arr.filter(o=>o.pay===p).reduce((s,o)=>s+(+o.collect||0),0);
   const jedu=act.filter(o=>o.status==='jedu');
-  $('sub').textContent=act.length?`${act.length} k doručení${jedu.length?` · vezu ${jedu.length}`:''}`:'Rozvoz';
-  const src=tab==='A'?act:done;
+  const sh=settings.shiftStart;$('dot').classList.toggle('on',!!sh);
+  $('subT').textContent=sh?`Ve směně od ${hhmm(sh)}`:'Mimo směnu';
+  const src=tab==='D'?done:act;
   const cs=sum(src,'hotove');$('sum').innerHTML=cs?`${ic('bill')}<b>${kc(cs)}</b>`:'';$('sum').title=tab==='A'?'Hotovost k vybrání':'Vybraná hotovost';
   let html='';
   if(tab==='A'){
@@ -747,47 +870,213 @@ function render(){
       :`<div class="empty"><div class="tile">${ic('check')}</div><h2>Ještě nic doručeno</h2><p>Doručené objednávky se tu ukážou i se souhrnem peněz.</p></div>`;
   }
   $('list').innerHTML=html;
+  if(tab==='M')renderMap();
 }
 $('btnRoute').onclick=()=>{settings.sort=settings.sort==='route'?'time':'route';saveSettings();routeKey='';if(settings.sort==='route'){startGeo();route=null}render();toast(settings.sort==='route'?'Řadím podle trasy':'Řadím podle času doručení')};
 $('tabA').onclick=()=>{tab='A';render()};$('tabD').onclick=()=>{tab='D';render()};
+$('tabM').onclick=()=>{tab='M';startGeo();routeKey='';render();computeRoute()};
 setInterval(render,30000);
 
-/* ================= směna a nastavení ================= */
-$('btnMenu').onclick=()=>{
-  const done=orders.filter(o=>o.status==='dorucena');
-  const s=p=>done.filter(o=>o.pay===p).reduce((a,o)=>a+(+o.collect||0),0);
-  const paid=done.filter(o=>o.pay==='zaplaceno').reduce((a,o)=>a+(+o.total||0),0);
-  const apps=['mapy:Mapy.com','google:Google','waze:Waze','apple:Apple'].map(x=>{const [v,l]=x.split(':');return `<button type="button" data-v="${v}" class="${settings.navApp===v?'on':''}">${l}</button>`}).join('');
-  openSheet('Směna',`<div class="sec" style="margin:4px 4px 8px">Souhrn doručených</div>
-  <div class="group">
-    <div class="gr"><span>Doručeno objednávek</span><b>${done.length}</b></div>
-    <div class="gr"><span>Hotovost k odevzdání</span><b>${kc(s('hotove'))}</b></div>
-    <div class="gr"><span>Kartou</span><b>${kc(s('karta'))}</b></div>
-    <div class="gr"><span>Zaplaceno online</span><b>${kc(paid)}</b></div>
-  </div>
-  <div class="sec" style="margin:18px 4px 8px">Nastavení</div>
-  <div class="fld"><span>Navigovat přes</span><div class="seg" id="sNav">${apps}</div></div>
-  <p class="hint">Tlačítko Navigace rovnou spustí trasu v této aplikaci.</p>
-  <label class="fld"><span>Výchozí obec</span><input id="sCity" value="${esc(settings.city)}" placeholder="např. Dobříš"></label>
-  <p class="hint">Doplní se k adrese, když na účtence obec chybí.</p>
-  <p class="hint" style="margin-top:10px">Verze appky: ${APP_VERSION}</p>
-  <button class="btn danger" id="sReset" style="margin-top:14px">${ic('trash')}Ukončit směnu a smazat vše</button>`,'Hotovo',()=>{
-    settings.city=$('sCity').value.trim();saveSettings();render();closeSheet();
+/* ================= mapa s trasou ================= */
+let map=null,mapLayers=null,meMarker=null,lastFit='';
+const geoCache2=new Map();
+async function routeLine(pts){ // geometrie trasy po silnicích (OSRM), jinak rovné čáry
+  const key=pts.map(p=>(+p.lat).toFixed(4)+','+(+p.lon).toFixed(4)).join(';');
+  if(geoCache2.has(key))return geoCache2.get(key);
+  let line=pts.map(p=>[p.lat,p.lon]);
+  try{
+    const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),6000);
+    const r=await fetch('https://router.project-osrm.org/route/v1/driving/'+pts.map(p=>`${fx(p.lon)},${fx(p.lat)}`).join(';')+'?overview=full&geometries=geojson',{signal:ctl.signal});
+    clearTimeout(tt);const j=await r.json();
+    if(j.code==='Ok'&&j.routes&&j.routes[0])line=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+  }catch(e){}
+  geoCache2.set(key,line);return line;
+}
+const pin=(cls,html,sz)=>L.divIcon({className:'',html:`<div class="mk ${cls}">${html}</div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+function updateMe(){if(map&&myPos){if(!meMarker)meMarker=L.marker([myPos.lat,myPos.lon],{icon:pin('me','',22),zIndexOffset:1000}).addTo(map);else meMarker.setLatLng([myPos.lat,myPos.lon])}}
+async function renderMap(){
+  const msg=$('mapMsg'),card=$('mapCard');
+  if(!window.L){msg.hidden=false;msg.innerHTML='Mapa se nenačetla – zkontroluj připojení.';card.hidden=true;return}
+  if(!map){
+    map=L.map('map',{zoomControl:false,attributionControl:true}).setView([PIZZERIA.lat,PIZZERIA.lon],14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
+    mapLayers=L.layerGroup().addTo(map);
+  }
+  setTimeout(()=>map.invalidateSize(),50);
+  updateMe();
+  const act=orders.filter(o=>o.status!=='dorucena');
+  mapLayers.clearLayers();
+  L.marker([PIZZERIA.lat,PIZZERIA.lon],{icon:pin('piz',ic('store'),38)}).addTo(mapLayers).bindPopup('Pizzeria Martini');
+  msg.hidden=true;
+  if(!act.length){card.hidden=false;card.innerHTML=`<div class="big">Žádné objednávky</div><div class="lbl2">Vyfoť účtenku a trasa se tu nakreslí.</div><button class="btn pri" data-add="cam">${ic('cam')}Vyfotit účtenku</button>`;return}
+  const pos=route?new Map(route.ids.map((id,i)=>[id,i])):new Map();
+  const geo=act.filter(o=>o.lat).sort((a,b)=>(pos.has(a.id)?pos.get(a.id):999)-(pos.has(b.id)?pos.get(b.id):999));
+  geo.forEach((o,i)=>{
+    const n=pos.has(o.id)?pos.get(o.id)+1:'·';
+    L.marker([o.lat,o.lon],{icon:pin(o.pay==='hotove'?'cashm':'cardm',n,34)}).addTo(mapLayers)
+      .bindPopup(`<b>#${esc(o.num)} ${esc(o.street)}</b><br>${o.pay==='hotove'?'Vybrat '+kc(o.collect):o.pay==='karta'?'Kartou '+kc(o.collect):'Zaplaceno'}${route&&route.eta[o.id]?'<br>Příjezd ≈ '+hhmm(route.eta[o.id]):''}`);
   });
-  $('sNav').onclick=e=>{const b=e.target.closest('button');if(!b)return;settings.navApp=b.dataset.v;saveSettings();[...$('sNav').children].forEach(x=>x.classList.toggle('on',x===b))};
-  let armed=false;
-  $('sReset').onclick=()=>{
-    if(!orders.length){closeSheet();return}
-    if(!armed){armed=true;$('sReset').innerHTML=`${ic('trash')}Opravdu smazat ${orders.length} objednávek?`;return}
-    const backup=orders;orders=[];save();render();closeSheet();toast('Směna ukončena',()=>{orders=backup;save();render()});
-  };
+  const start=myPos||PIZZERIA,pts=[start,...geo.filter(o=>pos.has(o.id))];
+  const cash=act.filter(o=>o.pay==='hotove').reduce((s,o)=>s+(+o.collect||0),0);
+  const first=route&&orders.find(o=>o.id===route.ids[0]);
+  card.hidden=false;
+  card.innerHTML=route?`<div class="big">${route.ids.length} ${route.ids.length===1?'zastávka':route.ids.length<5?'zastávky':'zastávek'}</div>
+    <div class="lbl2">Konec ≈ ${hhmm(route.end)} · start z ${route.from}${cash?` · hotově ${kc(cash)}`:''}${act.length>geo.length?` · ${act.length-geo.length} bez polohy`:''}</div>
+    <div class="row"><a class="btn pri" href="${first?esc(navTarget(first).url):'#'}" rel="noopener">${ic('nav')}Jet na #${esc(first?first.num:'')}</a><button class="btn" id="mapFit" style="width:auto;padding:0 18px" aria-label="Zobrazit celou trasu">${ic('route')}</button></div>`
+    :`<div class="big">Počítám trasu…</div><div class="lbl2">${geo.length?'Hledám nejlepší pořadí zastávek.':'Dohledávám polohy adres.'}</div>`;
+  const fitAll=()=>{const b=L.latLngBounds([[start.lat,start.lon],...geo.map(o=>[o.lat,o.lon])]);map.fitBounds(b,{paddingTopLeft:[30,30],paddingBottomRight:[30,190],maxZoom:16})};
+  const fk=pts.map(p=>p.lat+','+p.lon).join(';');if(fk!==lastFit){lastFit=fk;fitAll()}
+  if($('mapFit'))$('mapFit').onclick=fitAll;
+  if(route&&pts.length>1){
+    const line=await routeLine(pts);
+    if(tab==='M'){L.polyline(line,{color:'#fff',weight:6,opacity:.95}).addTo(mapLayers);L.polyline(line,{color:'#E8402B',weight:2,opacity:.9,dashArray:'1 9'}).addTo(mapLayers)}
+  }
+}
+
+/* ================= boční menu ================= */
+const SHKEY='martini.shifts.v1';
+let shifts=[];try{shifts=JSON.parse(localStorage.getItem(SHKEY)||'[]')}catch(e){}
+const saveShifts=()=>{try{localStorage.setItem(SHKEY,JSON.stringify(shifts))}catch(e){}};
+function openDrawer(){
+  const sh=settings.shiftStart;
+  $('drawer').innerHTML=`
+  <button class="promo" data-p="prehled">${ic('trend')}<span>Dnes doručeno ${orders.filter(o=>o.status==='dorucena').length}<small>Hotovost k odevzdání ${kc(cashDone())}</small></span></button>
+  <button class="mi" data-p="profil">${ic('user')}<span class="t">${esc(settings.name||'Kurýr Martini')}<small class="${sh?'on':''}">${sh?'Ve směně':'Mimo směnu'}</small></span></button>
+  <button class="mi" data-p="prehled">${ic('trend')}<span class="t">Můj přehled</span></button>
+  <button class="mi" data-p="finance">${ic('bag')}<span class="t">Finance</span></button>
+  <button class="mi" data-p="smeny">${ic('cal')}<span class="t">Směny</span></button>
+  <button class="mi" data-p="nastaveni">${ic('gear')}<span class="t">Nastavení</span></button>
+  <button class="mi" data-p="feedback">${ic('chat')}<span class="t">Zpětná vazba</span></button>
+  <button class="mi" data-p="info">${ic('help')}<span class="t">Jak appka funguje<small>Verze ${APP_VERSION}</small></span></button>`;
+  $('drawer').classList.add('on');$('ovD').classList.add('on');
+}
+function closeDrawer(){$('drawer').classList.remove('on');$('ovD').classList.remove('on')}
+$('btnMenu').onclick=openDrawer;$('ovD').onclick=closeDrawer;
+$('drawer').onclick=e=>{const b=e.target.closest('[data-p]');if(!b)return;closeDrawer();const p=b.dataset.p;if(p==='feedback')openFb();else openPage(p)};
+const cashDone=()=>orders.filter(o=>o.status==='dorucena'&&o.pay==='hotove').reduce((s,o)=>s+(+o.collect||0),0);
+const czDay=t=>new Date(t).toLocaleDateString('cs-CZ',{day:'numeric',month:'long'});
+const dur=ms=>{const m=Math.max(0,Math.round(ms/60000));return m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`};
+let curPage='';
+function openPage(p){
+  curPage=p;const ttl={profil:'Profil',prehled:'Můj přehled',finance:'Finance',smeny:'Směny',nastaveni:'Nastavení',info:'Jak appka funguje'}[p];
+  $('pTtl').textContent=ttl;$('pBody').innerHTML=PAGES[p]();$('page').classList.add('on');$('page').scrollTop=0;$('page').classList.remove('scrolled');
+  (BIND[p]||(()=>{}))();
+}
+function closePage(){$('page').classList.remove('on');curPage='';render()}
+$('pBack').onclick=closePage;
+$('page').addEventListener('scroll',()=>$('page').classList.toggle('scrolled',$('page').scrollTop>60));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('fb').classList.contains('on'))closeFb();else if($('page').classList.contains('on'))closePage();else closeDrawer()}});
+const done=()=>orders.filter(o=>o.status==='dorucena');
+const PAGES={
+  profil:()=>`<h1 class="h1">Profil</h1><div class="prof">
+    <div class="lab">Jméno kurýra</div><div class="val">${esc(settings.name||'Nenastaveno')}</div>
+    <div class="lab">Rozvážím pro</div><div class="val">Pizzeria Martini, Dobříš</div>
+    <div class="lab">Stav</div><div class="val">${settings.shiftStart?'Ve směně od '+hhmm(settings.shiftStart):'Mimo směnu'}</div>
+    <div class="lab">Odjeté směny</div><div class="val">${shifts.length}</div>
+    <div class="lab">Doručeno celkem</div><div class="val">${shifts.reduce((s,x)=>s+x.count,0)+done().length}</div></div>
+    <h2 class="h2">Účet</h2><p class="note2">Jméno změníš v Nastavení. Data jsou uložená jen v tomhle telefonu.</p>`,
+  prehled:()=>{
+    const d=done(),sh=settings.shiftStart,hrs=sh?Math.max(.25,(Date.now()-sh)/36e5):0,perH=sh?d.length/hrs:0;
+    const times=d.filter(o=>o.done&&o.created).map(o=>(o.done-o.created)/60000),avg=times.length?Math.round(times.reduce((a,b)=>a+b,0)/times.length):0;
+    const by=new Array(24).fill(0);d.forEach(o=>{if(o.done)by[new Date(o.done).getHours()]++});
+    const from=sh?new Date(sh).getHours():Math.max(0,new Date().getHours()-5),to=Math.max(from+5,new Date().getHours()),mx=Math.max(1,...by);
+    const bars=[];for(let x=from;x<=Math.min(23,to);x++)bars.push(`<i class="${x===new Date().getHours()?'hot':''}" style="height:${6+by[x]/mx*100}%"><span>${x}</span></i>`);
+    const g=Math.min(1,perH/4),a=Math.PI*(1-g),gx=110+90*Math.cos(a),gy=115-90*Math.sin(a);
+    return `<h1 class="h1">Můj přehled</h1><p class="lead">Ahoj${settings.name?' '+esc(settings.name.split(' ')[0]):''}! Tady je tvoje dnešní směna.</p><p class="note2">Počítá se z objednávek v tomhle telefonu.</p>
+    <h2 class="h2">Doručené objednávky</h2>
+    <div class="bigcard"><div class="n">${d.length}</div><div class="l">Doručené objednávky</div>${ic('bag').replace('class="i"','class="i deco"')}</div>
+    <div class="info">${ic('info')}<span>${d.length?`Vybraná hotovost ${kc(cashDone())}.`:'Zatím žádná doručená objednávka.'}</span></div>
+    <h2 class="h2">Doručení za hodinu</h2>
+    <svg class="gauge" viewBox="0 0 220 130"><path d="M20 115 A90 90 0 0 1 200 115" fill="none" stroke="#2B3146" stroke-width="12" stroke-linecap="round"/>${g>0?`<path d="M20 115 A90 90 0 0 1 ${gx.toFixed(1)} ${gy.toFixed(1)}" fill="none" stroke="#E8402B" stroke-width="12" stroke-linecap="round"/>`:''}<text x="110" y="112" text-anchor="middle" fill="#EDEAE5" font-family="Nunito" font-weight="900" font-size="46">${perH.toFixed(1).replace('.',',')}</text></svg>
+    <div class="info">${ic('info')}<span>${sh?`Ve směně ${dur(Date.now()-sh)}.`:'Směna začne s první objednávkou.'}</span></div>
+    <h2 class="h2">Průměrná doba doručení</h2>
+    <svg class="ring" viewBox="0 0 190 190"><circle cx="95" cy="95" r="80" fill="none" stroke="#2B3146" stroke-width="10"/>${avg?`<circle cx="95" cy="95" r="80" fill="none" stroke="#E8402B" stroke-width="10" stroke-linecap="round" stroke-dasharray="${Math.min(1,avg/60)*502} 502" transform="rotate(-90 95 95)"/>`:''}<text x="95" y="108" text-anchor="middle" fill="#EDEAE5" font-family="Nunito" font-weight="900" font-size="44">${avg}′</text></svg>
+    <div class="info${avg>45?' warn2':''}">${ic(avg>45?'alert':'info')}<span>${avg?`Od vyfocení účtenky po doručení průměrně ${avg} min.`:'Ukáže se po prvním doručení.'}</span></div>
+    <h2 class="h2">Doručení podle hodin</h2><div class="panel"><div class="bars">${bars.join('')}</div><div style="height:22px"></div></div>`;
+  },
+  finance:()=>{
+    const d=done(),s=p=>d.filter(o=>o.pay===p).reduce((a,o)=>a+(+o.collect||0),0),paid=d.filter(o=>o.pay==='zaplaceno').reduce((a,o)=>a+(+o.total||0),0);
+    const pend=orders.filter(o=>o.status!=='dorucena'&&o.pay==='hotove').reduce((a,o)=>a+(+o.collect||0),0);
+    const tx=[...d].sort((a,b)=>(b.done||0)-(a.done||0)).map(o=>`<div class="tx"><div class="a"><b>#${esc(o.num)} ${esc(o.street||'')}</b><span>${o.done?hhmm(o.done):''} · ${o.pay==='hotove'?'Hotově':o.pay==='karta'?'Kartou':o.pay==='zaplaceno'?'Zaplaceno online':'Neznámá platba'}</span></div><div class="v ${o.pay==='hotove'?'plus':''}">${o.pay==='zaplaceno'?kc(o.total):'+'+kc(o.collect)}</div></div>`).join('');
+    return `<h1 class="h1">Finance</h1>
+    <div class="panel"><div class="cap">Hotovost k odevzdání</div><div class="money">${kc(s('hotove'))}</div>
+    <div class="kv"><span>Ještě vybrat</span><b>${kc(pend)}</b></div>
+    <div class="kv"><span>Kartou</span><b>${kc(s('karta'))}</b></div>
+    <div class="kv"><span>Zaplaceno online</span><b>${kc(paid)}</b></div>
+    <div class="kv"><span>Tržba celkem</span><b>${kc(s('hotove')+s('karta')+paid)}</b></div></div>
+    <h2 class="h1" style="font-size:34px;margin-top:30px">Nedávné transakce</h2>${tx?`<div class="dayh">${czDay(Date.now())}</div>${tx}`:'<p class="note2">Zatím žádná doručená objednávka.</p>'}`;
+  },
+  smeny:()=>{
+    const sh=settings.shiftStart,d=done();
+    const hist=[...shifts].reverse().map(x=>`<div class="tx"><div class="a"><b>${czDay(x.start)}</b><span>${hhmm(x.start)}–${hhmm(x.end)} · ${x.count} doručení</span></div><div class="v plus">${kc(x.cash)}</div></div>`).join('');
+    return `<h1 class="h1">Směny</h1>
+    <div class="panel"><div class="cap">${sh?'Aktuální směna':'Mimo směnu'}</div><div class="money">${sh?dur(Date.now()-sh):'—'}</div>
+    <div class="kv"><span>Začátek</span><b>${sh?hhmm(sh):'—'}</b></div>
+    <div class="kv"><span>Doručeno</span><b>${d.length}</b></div>
+    <div class="kv"><span>Hotovost k odevzdání</span><b>${kc(cashDone())}</b></div></div>
+    <div class="btns" style="max-width:none;margin-top:16px">${sh?`<button class="btn danger" id="endShift">${ic('trash')}Ukončit směnu</button>`:`<button class="btn pri" id="startShift">Začít směnu</button>`}</div>
+    <p class="note2" style="margin-top:10px">Ukončení směny uloží souhrn do historie a vyčistí seznam objednávek.</p>
+    <h2 class="h2">Historie směn</h2>${hist||'<p class="note2">Zatím žádná ukončená směna.</p>'}`;
+  },
+  nastaveni:()=>{
+    const apps=['mapy:Mapy.com','google:Google','waze:Waze','apple:Apple'].map(x=>{const [v,l]=x.split(':');return `<button type="button" data-v="${v}" class="${settings.navApp===v?'on':''}">${l}</button>`}).join('');
+    return `<h1 class="h1">Nastavení</h1>
+    <h2 class="h2">Navigace</h2><div class="fld"><span>Navigovat přes</span><div class="seg" id="sNav">${apps}</div></div><p class="hint">Tlačítko Navigace rovnou spustí trasu v této aplikaci.</p>
+    <h2 class="h2">Rozvoz</h2><label class="fld"><span>Výchozí obec</span><input id="sCity" value="${esc(settings.city)}" placeholder="např. Dobříš"></label><p class="hint">Doplní se k adrese, když na účtence obec chybí.</p>
+    <h2 class="h2">Profil</h2><label class="fld"><span>Jméno kurýra</span><input id="sName" value="${esc(settings.name||'')}" placeholder="např. Pepa" autocomplete="name"></label>
+    <h2 class="h2">Zpětná vazba</h2><label class="fld"><span>Posílat hodnocení na e-mail</span><input id="sFb" type="email" inputmode="email" value="${esc(settings.fbEmail||'')}" placeholder="např. jan@seznam.cz"></label><p class="hint">Když je prázdné, hodnocení se jen uloží v telefonu.</p>
+    <p class="note2" style="margin-top:20px">Verze appky: ${APP_VERSION}</p>`;
+  },
+  info:()=>`<h1 class="h1">Jak appka funguje</h1>
+    <div class="srow"><span class="t">Foto<small>Vyfoť účtenku ze Speedla, appka ji přečte a zkontroluješ údaje.</small></span></div>
+    <div class="srow"><span class="t">Slider<small>Přetáhni „Vyzvednuta“ a pak „Doručena“. Ukliknutí vrátíš tlačítkem Zpět.</small></span></div>
+    <div class="srow"><span class="t">Trasa<small>Ikona trasy seřadí objednávky do nejlepšího pořadí od tvé polohy.</small></span></div>
+    <div class="srow"><span class="t">Mapa<small>Ukáže zastávky a nakreslenou trasu, tlačítko spustí navigaci na první.</small></span></div>
+    <div class="srow"><span class="t">Barvy<small>Červená = vybrat hotově, modrá = kartou nebo zaplaceno, zelená = doručeno.</small></span></div>`
 };
+const BIND={
+  nastaveni:()=>{
+    $('sNav').onclick=e=>{const b=e.target.closest('button');if(!b)return;settings.navApp=b.dataset.v;saveSettings();[...$('sNav').children].forEach(x=>x.classList.toggle('on',x===b))};
+    const sv=()=>{settings.city=$('sCity').value.trim();settings.name=$('sName').value.trim();settings.fbEmail=$('sFb').value.trim();saveSettings()};
+    ['sCity','sName','sFb'].forEach(id=>$(id).addEventListener('input',sv));
+  },
+  smeny:()=>{
+    if($('startShift'))$('startShift').onclick=()=>{settings.shiftStart=Date.now();saveSettings();openPage('smeny');toast('Směna začala')};
+    if($('endShift')){let armed=false;$('endShift').onclick=()=>{
+      if(!armed){armed=true;$('endShift').innerHTML=`${ic('trash')}Opravdu ukončit? Smaže ${orders.length} obj.`;return}
+      const d=done(),entry={start:settings.shiftStart||Date.now(),end:Date.now(),count:d.length,cash:cashDone()};
+      const bo=orders,bs=settings.shiftStart;
+      shifts.push(entry);saveShifts();orders=[];save();settings.shiftStart=null;saveSettings();openPage('smeny');
+      toast('Směna ukončena',()=>{shifts.pop();saveShifts();orders=bo;save();settings.shiftStart=bs;saveSettings();openPage('smeny')});
+    }}
+  }
+};
+
+/* ================= hodnocení při spuštění ================= */
+const FBKEY='martini.fb.v1';let fbRate=0;
+function openFb(){
+  fbRate=0;$('fbC').value='';$('fbSend').disabled=true;
+  $('fbStars').innerHTML=[1,2,3,4,5].map(n=>`<button data-n="${n}" aria-label="${n} z 5">${ic('star')}</button>`).join('');
+  $('fb').classList.add('on');
+}
+function closeFb(){$('fb').classList.remove('on');try{localStorage.setItem(FBKEY+'.last',new Date().toDateString())}catch(e){}}
+$('fbStars').onclick=e=>{const b=e.target.closest('button');if(!b)return;fbRate=+b.dataset.n;[...$('fbStars').children].forEach(x=>x.classList.toggle('on',+x.dataset.n<=fbRate));$('fbSend').disabled=false};
+$('fbX').onclick=closeFb;$('fbSkip').onclick=closeFb;
+$('fbSend').onclick=()=>{
+  if(!fbRate)return;const c=$('fbC').value.trim();
+  try{const l=JSON.parse(localStorage.getItem(FBKEY)||'[]');l.push({at:Date.now(),rate:fbRate,comment:c,v:APP_VERSION});localStorage.setItem(FBKEY,JSON.stringify(l.slice(-50)))}catch(e){}
+  closeFb();toast('Díky za hodnocení!');
+  if(settings.fbEmail){const body=`Hodnocení: ${'★'.repeat(fbRate)}${'☆'.repeat(5-fbRate)} (${fbRate}/5)\n\n${c}\n\nVerze ${APP_VERSION}`;
+    setTimeout(()=>{location.href=`mailto:${encodeURIComponent(settings.fbEmail)}?subject=${encodeURIComponent('Martini rozvoz – hodnocení appky')}&body=${encodeURIComponent(body)}`},300)}
+};
+function maybeFb(){let last='';try{last=localStorage.getItem(FBKEY+'.last')||''}catch(e){}if(last!==new Date().toDateString())setTimeout(()=>{if(!document.querySelector('.sheet.on'))openFb()},1200)}
 
 // převzetí dat ze staré verze
 try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
 render();
+maybeFb();
 try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast('Appka aktualizována'),400)}}catch(e){}
-if(settings.navApp==='mapy'||settings.sort==='route')setTimeout(startGeo,1200);
+setTimeout(startGeo,1500);
 (async()=>{for(const o of orders.filter(o=>o.street&&!o.geoQ&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
 window.__app={parseReceipt,prepImage};
 }
