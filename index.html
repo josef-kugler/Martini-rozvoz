@@ -140,6 +140,7 @@ a.dr{color:var(--ink)}
 #mapWrap.on{display:block}
 #map{position:absolute;inset:0}
 .leaflet-container{background:#141826;font:inherit}
+#map:not(.esri) .leaflet-tile-pane{filter:invert(1) hue-rotate(185deg) brightness(.82) contrast(.9) saturate(.35)}
 .leaflet-control-attribution{background:rgba(11,14,23,.7)!important;color:#8E93AB!important;font-size:10px}
 .leaflet-control-attribution a{color:#B5B9CC!important}
 .leaflet-bar a{background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
@@ -308,7 +309,7 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-24.1';
+const APP_VERSION='2026-11-24.2';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -899,7 +900,12 @@ async function renderMap(){
   if(!window.L){msg.hidden=false;msg.innerHTML='Mapa se nenačetla – zkontroluj připojení.';card.hidden=true;return}
   if(!map){
     map=L.map('map',{zoomControl:false,attributionControl:true}).setView([PIZZERIA.lat,PIZZERIA.lon],14);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'© OpenStreetMap, © CARTO'}).addTo(map);
+    // podklad OpenStreetMap (zdarma, bez klíče), ztmavený filtrem; když nejde, záložní Esri
+    const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
+    let errs=0;osm.on('tileerror',()=>{if(++errs===6){map.removeLayer(osm);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'© Esri, OpenStreetMap'}).addTo(map);
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',{maxZoom:16}).addTo(map);
+      $('map').classList.add('esri')}});
     mapLayers=L.layerGroup().addTo(map);
   }
   setTimeout(()=>map.invalidateSize(),50);
@@ -1073,6 +1079,7 @@ function maybeFb(){let last='';try{last=localStorage.getItem(FBKEY+'.last')||''}
 
 // převzetí dat ze staré verze
 try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
+if(!settings.shiftStart){const a=orders.filter(o=>o.status!=='dorucena'||o.done);if(a.length){settings.shiftStart=Math.min(...a.map(o=>o.created||Date.now()));saveSettings()}}
 render();
 maybeFb();
 try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast('Appka aktualizována'),400)}}catch(e){}
