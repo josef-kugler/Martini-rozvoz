@@ -45,6 +45,15 @@ button:active{transform:scale(.97);transition:transform .1s}
 .tabs{display:flex;align-items:stretch;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:calc(env(safe-area-inset-top) + 54px);z-index:19;padding-right:10px}
 .tabs button{height:42px;padding:0 12px;font-size:15px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap}
 .tabs button.on{color:var(--ink);border-color:var(--red)}
+.tabs .route{display:flex;align-items:center;gap:4px;padding:0 8px;border:0;color:var(--muted);font-weight:600}
+.tabs .route svg{width:18px;height:18px}
+.tabs .route.on{color:#fff;background:var(--red);border-radius:999px;height:30px;margin:6px 0;padding:0 10px}
+.stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#111;font-weight:700;font-size:14px;display:grid;place-items:center;flex:none;margin-right:-2px}
+.eta{font-size:14px;color:var(--muted);white-space:nowrap;flex:none}
+.eta b{color:var(--ink);font-weight:600}
+.rinfo{display:flex;align-items:center;gap:6px;margin:0 10px 6px;font-size:13px;color:var(--muted)}
+.rinfo svg{width:15px;height:15px}
+@media(max-width:350px){.tabs .route span{display:none}.tabs button{padding:0 8px}}
 .sum{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:15px;color:var(--muted);white-space:nowrap}
 .sum b{color:#1E7A1D;font-weight:700}
 .sum svg{width:20px;height:20px;color:#1E7A1D}
@@ -55,7 +64,8 @@ main{padding-top:6px}
 /* karta – kompaktní, 5 na obrazovku */
 .card{background:var(--card);margin:0 6px 6px;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .strip{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 12px;color:#fff;background:var(--blue)}
-.st-jedu .strip{background:var(--red)} .st-dorucena .strip{background:var(--green-ink)}
+.pay-hotove .strip{background:var(--red)} .st-dorucena .strip{background:var(--green-ink)}
+.strip .veze{width:20px;height:20px;margin-left:-4px;opacity:.95}
 .strip b{font-size:20px;font-weight:600;min-width:46px}
 .cash{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 9px;border-radius:9px;background:#fff;color:#1E7A1D;font-size:18px;font-weight:700;white-space:nowrap}
 .cash svg{width:20px;height:20px;stroke-width:2.2}
@@ -171,7 +181,7 @@ a.dr{color:var(--ink)}
 </header>
 <input type="file" id="inCam" accept="image/*" capture="environment" hidden>
 <input type="file" id="inGal" accept="image/*" hidden>
-<nav class="tabs"><button id="tabA" class="on">Aktivní</button><button id="tabD">Doručené</button><div class="sum" id="sum"></div></nav>
+<nav class="tabs"><button id="tabA" class="on">Aktivní</button><button id="tabD">Doručené</button><button id="btnRoute" class="route" aria-pressed="false" title="Seřadit podle trasy"></button><div class="sum" id="sum"></div></nav>
 <main>
   <div id="list"></div>
 </main>
@@ -187,7 +197,7 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-23.5';
+const APP_VERSION='2026-11-23.7';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -214,6 +224,8 @@ const P={
   edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
   trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
   img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+  truck:'<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.6a1 1 0 0 0-.2-.6l-3.5-4.4a1 1 0 0 0-.8-.4H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>',
+  route:'<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
   bill:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
   ccard:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
   money:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
@@ -232,7 +244,7 @@ const kc=n=>(Math.round((+n||0)*100)/100).toLocaleString('cs-CZ')+' Kč';
 
 /* ================= úložiště ================= */
 const KEY='martini.orders.v2', SKEY='martini.settings.v3';
-let orders=[], settings={city:'Dobříš',navApp:'mapy'}, tab='A';
+let orders=[], settings={city:'Dobříš',navApp:'mapy',sort:'time'}, tab='A';
 const opened=new Set();
 try{orders=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
 try{Object.assign(settings,JSON.parse(localStorage.getItem(SKEY)||'{}'))}catch(e){}
@@ -527,9 +539,67 @@ document.addEventListener('click',e=>{
 let myPos=null,geoOn=false;
 function startGeo(){
   if(geoOn||!ONWEB||!navigator.geolocation)return;geoOn=true;
-  navigator.geolocation.watchPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude}},()=>{geoOn=false},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
+  navigator.geolocation.watchPosition(p=>{myPos={lat:p.coords.latitude,lon:p.coords.longitude};if(settings.sort==='route'&&(!routePos||hav(routePos,myPos)>300))scheduleRoute()},()=>{geoOn=false},{enableHighAccuracy:false,maximumAge:60000,timeout:30000});
 }
 const fx=n=>(+n).toFixed(6);
+
+/* ================= trasa: nejlepší pořadí zastávek ================= */
+const PIZZERIA={lat:49.78165,lon:14.16745}; // Pizzeria Martini, Mírové náměstí 190, Dobříš (přibližně)
+let route=null,routeBusy=false,routeT=null,routeKey='',routePos=null;
+const hav=(a,b)=>{const R=6371e3,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r,x=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
+const matCache=new Map();
+async function travelMatrix(pts){ // časy jízdy v sekundách po silnicích (OSRM), jinak odhad vzdušnou čarou
+  const key=pts.map(p=>(+p.lat).toFixed(4)+','+(+p.lon).toFixed(4)).join(';');
+  if(matCache.has(key))return matCache.get(key);
+  let M=null,src='silnice';
+  try{
+    const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),6000);
+    const r=await fetch('https://router.project-osrm.org/table/v1/driving/'+pts.map(p=>`${fx(p.lon)},${fx(p.lat)}`).join(';')+'?annotations=duration',{signal:ctl.signal});
+    clearTimeout(tt);const j=await r.json();
+    if(j.code==='Ok'&&j.durations)M=j.durations.map(row=>row.map(v=>v==null?1e6:v));
+  }catch(e){}
+  if(!M){M=pts.map(a=>pts.map(b=>hav(a,b)*1.35/(35/3.6)));src='odhad'}
+  const res={M,src};matCache.set(key,res);return res;
+}
+const STOP_S=120; // 2 min na předání u dveří
+function plan(M,dues,now){ // dues[i] = čas „doručit v“ v ms nebo null; 0 v matici = start
+  const n=dues.length,late=(i,t)=>dues[i]==null?0:Math.max(0,(now+t*1000-dues[i])/1000)*3;
+  const cost=seq=>{let t=0,c=0,p=0;for(const i of seq){t+=M[p][i+1];c+=late(i,t);t+=STOP_S;p=i+1}return c+t};
+  let best={cost:Infinity,seq:[]};
+  if(n<=8){ // přesně: všechna pořadí s ořezáváním
+    const used=new Array(n).fill(false),seq=[];
+    const dfs=(p,t,c)=>{if(c+t>=best.cost)return;if(seq.length===n){best={cost:c+t,seq:[...seq]};return}
+      for(let i=0;i<n;i++)if(!used[i]){const tt=t+M[p][i+1];used[i]=true;seq.push(i);dfs(i+1,tt+STOP_S,c+late(i,tt));seq.pop();used[i]=false}};
+    dfs(0,0,0);
+  }else{ // hodně zastávek: nejbližší soused + 2-opt
+    let seq=[],left=[...Array(n).keys()],p=0;
+    while(left.length){left.sort((a,b)=>M[p][a+1]-M[p][b+1]);const i=left.shift();seq.push(i);p=i+1}
+    let bc=cost(seq),imp=true;
+    while(imp){imp=false;for(let i=0;i<n-1;i++)for(let k=i+1;k<n;k++){const s=[...seq.slice(0,i),...seq.slice(i,k+1).reverse(),...seq.slice(k+1)],c=cost(s);if(c<bc-1){seq=s;bc=c;imp=true}}}
+    best={cost:bc,seq};
+  }
+  const eta=[];let t=0,p=0;for(const i of best.seq){t+=M[p][i+1];eta.push(now+t*1000);t+=STOP_S;p=i+1}
+  return {seq:best.seq,eta};
+}
+function dueOf(o){const tm=timing(o);return tm.diff==null?null:Date.now()+tm.diff*60000}
+async function computeRoute(){
+  if(settings.sort!=='route')return;
+  if(routeBusy){scheduleRoute();return}
+  const act=orders.filter(o=>o.status!=='dorucena'&&o.lat);
+  if(!act.length){route=null;render();return}
+  routeBusy=true;
+  try{
+    const start=myPos||PIZZERIA,now=Date.now();
+    const {M,src}=await travelMatrix([start,...act]);
+    const r=plan(M,act.map(dueOf),now);
+    route={ids:r.seq.map(i=>act[i].id),eta:Object.fromEntries(r.seq.map((i,k)=>[act[i].id,r.eta[k]])),from:myPos?'tvé polohy':'pizzerie',src,end:r.eta[r.eta.length-1]};
+    routePos=myPos;
+  }finally{routeBusy=false}
+  render();
+}
+function scheduleRoute(){clearTimeout(routeT);routeT=setTimeout(computeRoute,400)}
+const hhmm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+setInterval(()=>{if(settings.sort==='route')computeRoute()},120000);
 function navTarget(o){
   const text=[o.street,o.city||settings.city].filter(Boolean).join(', ');
   const ll=o.lat?`${o.lat},${o.lon}`:'';
@@ -558,6 +628,7 @@ const PAYW={hotove:'hotově',karta:'kartou',zaplaceno:'zaplaceno'};
 
 function cardHtml(o){
   const tm=timing(o),tel=telHref(o.phone),hasAddr=!!o.street,open=opened.has(o.id),act=o.status!=='dorucena';
+  const si=act&&settings.sort==='route'&&route?route.ids.indexOf(o.id):-1;
   const late=tm.diff!=null&&tm.diff<0&&act;
   const right=tm.txt?`${ic('clock')}${esc(tm.txt)}${tm.diff!=null&&act?`<em>${fmtDiff(tm.diff)}</em>`:''}`:`${ic('clock')}${ago(o.created).replace('před ','')}`;
   const has=o.collect!==''&&o.collect!=null;
@@ -568,10 +639,10 @@ function cardHtml(o){
   const payRow=o.pay==='zaplaceno'?`Zaplaceno online${o.total?` · ${kc(o.total)}`:''}`:`Vybrat ${PAYW[o.pay]||''}: <b>${has?kc(o.collect):'?'}</b>`;
   const bar=act?`<div class="slide" data-to="${o.status==='nova'?'jedu':'dorucena'}"><span class="lbl">${o.status==='nova'?'Vyzvednuta':'Doručena'}</span><div class="knob">${ic('right')}</div></div>`
     :`<button class="back" data-a="nova">${ic('undo')}Vrátit</button>`;
-  return `<article class="card st-${o.status}${open?' open':''}${late?' late':''}" data-id="${o.id}">
-  <div class="strip"><b>#${esc(o.num||'–')}</b>${cash}<span class="tm">${right}</span></div>
+  return `<article class="card st-${o.status} pay-${o.pay||'nevim'}${open?' open':''}${late?' late':''}" data-id="${o.id}">
+  <div class="strip">${si>=0?`<span class="stop" title="Pořadí zastávky">${si+1}</span>`:''}<b>#${esc(o.num||'–')}</b>${o.status==='jedu'?ic('truck').replace('class="i"','class="i veze" aria-label="Vezu"'):''}${cash}<span class="tm">${right}</span></div>
   <div class="cbody">
-    <div class="addr"><b>${esc(o.street||'Bez adresy')}</b><span>${esc(o.city||settings.city||'')}</span></div>
+    <div class="addr"><b>${esc(o.street||'Bez adresy')}</b><span>${esc(o.city||settings.city||'')}</span></div>${si>=0?`<span class="eta">≈ <b>${hhmm(route.eta[o.id])}</b></span>`:''}
     <button class="toggle" data-a="toggle" aria-label="${open?'Skrýt':'Zobrazit'} detail" aria-expanded="${open}"><span>${ic('down')}</span></button>
   </div>
   <div class="det">
@@ -650,6 +721,7 @@ function render(){
   const act=orders.filter(o=>o.status!=='dorucena'),done=orders.filter(o=>o.status==='dorucena');
   $('tabA').textContent=`Aktivní ${act.length}`;$('tabD').textContent=`Doručené ${done.length}`;
   $('tabA').classList.toggle('on',tab==='A');$('tabD').classList.toggle('on',tab==='D');
+  const rb=$('btnRoute');rb.classList.toggle('on',settings.sort==='route');rb.setAttribute('aria-pressed',settings.sort==='route');rb.innerHTML=ic('route')+'<span>Trasa</span>';rb.style.display=tab==='A'?'':'none';
   const sum=(arr,p)=>arr.filter(o=>o.pay===p).reduce((s,o)=>s+(+o.collect||0),0);
   const jedu=act.filter(o=>o.status==='jedu');
   $('sub').textContent=act.length?`${act.length} k doručení${jedu.length?` · vezu ${jedu.length}`:''}`:'Rozvoz';
@@ -661,13 +733,22 @@ function render(){
       <p>Vyfoť účtenku ze Speedla a objednávka se tu objeví.</p><div class="btns">
       <button class="btn pri" data-add="cam">${ic('cam')}Vyfotit účtenku</button><button class="btn" data-add="man">${ic('edit')}Zadat ručně</button></div></div>`;
     const by=(a,b)=>sortKey(a)-sortKey(b);
-    html+=jedu.sort(by).map(cardHtml).join('')+act.filter(o=>o.status==='nova').sort(by).map(cardHtml).join('');
+    if(settings.sort==='route'){
+      const key=act.map(o=>o.id+o.status+(o.lat||'')).sort().join('|');
+      if(key!==routeKey){routeKey=key;scheduleRoute()}
+      if(route&&act.length){
+        const pos=new Map(route.ids.map((id,i)=>[id,i])),noGeo=act.filter(o=>!pos.has(o.id)).length;
+        html+=`<div class="rinfo">${ic('route')}<span>Trasa z ${route.from} · konec ≈ <b>${hhmm(route.end)}</b>${route.src==='odhad'?' · odhad':''}${noGeo?` · ${noGeo} bez polohy na konci`:''}</span></div>`;
+        html+=[...act].sort((a,b)=>(pos.has(a.id)?pos.get(a.id):999)-(pos.has(b.id)?pos.get(b.id):999)||by(a,b)).map(cardHtml).join('');
+      }else if(act.length){html+=`<div class="rinfo">${ic('route')}<span>Počítám trasu…</span></div>`+[...act].sort(by).map(cardHtml).join('')}
+    }else html+=jedu.sort(by).map(cardHtml).join('')+act.filter(o=>o.status==='nova').sort(by).map(cardHtml).join('');
   }else{
     html=done.length?done.sort((a,b)=>(b.done||0)-(a.done||0)).map(cardHtml).join('')
       :`<div class="empty"><div class="tile">${ic('check')}</div><h2>Ještě nic doručeno</h2><p>Doručené objednávky se tu ukážou i se souhrnem peněz.</p></div>`;
   }
   $('list').innerHTML=html;
 }
+$('btnRoute').onclick=()=>{settings.sort=settings.sort==='route'?'time':'route';saveSettings();routeKey='';if(settings.sort==='route'){startGeo();route=null}render();toast(settings.sort==='route'?'Řadím podle trasy':'Řadím podle času doručení')};
 $('tabA').onclick=()=>{tab='A';render()};$('tabD').onclick=()=>{tab='D';render()};
 setInterval(render,30000);
 
@@ -706,7 +787,7 @@ $('btnMenu').onclick=()=>{
 try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
 render();
 try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast('Appka aktualizována'),400)}}catch(e){}
-if(settings.navApp==='mapy')setTimeout(startGeo,1200);
+if(settings.navApp==='mapy'||settings.sort==='route')setTimeout(startGeo,1200);
 (async()=>{for(const o of orders.filter(o=>o.street&&!o.geoQ&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
 window.__app={parseReceipt,prepImage};
 }
