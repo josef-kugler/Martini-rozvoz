@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23E84C2B'/%3E%3Cpath d='M36 64h66l24 28h20v28H36z' fill='white'/%3E%3Ccircle cx='62' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3Ccircle cx='124' cy='124' r='14' fill='%23E84C2B' stroke='white' stroke-width='8'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 /* Martini rozvoz – tmavý vzhled inspirovaný kurýrními appkami, akcent červená */
@@ -23,12 +23,12 @@
   --line:rgba(255,255,255,.08); --field:#2B3146; --soft:rgba(255,255,255,.08);
   --ink:#EDEAE5; --muted:#8E93AB; --faint:#5C6178;
   --ease:cubic-bezier(.32,.72,0,1);
-  --head:"Nunito",-apple-system,system-ui,sans-serif;
+  --head:"Fira Sans",-apple-system,system-ui,sans-serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box;min-width:0;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg)}
-body{color:var(--ink);font:17px/1.4 "Inter",-apple-system,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
+body{color:var(--ink);font:17px/1.4 "Fira Sans",-apple-system,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(28px + env(safe-area-inset-bottom))}
 button,input,textarea{font:inherit;color:inherit}
 button{cursor:pointer;touch-action:manipulation;border:0;background:none;padding:0}
 a{color:inherit}
@@ -309,7 +309,7 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-24.2';
+const APP_VERSION='2026-11-24.4';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -542,12 +542,67 @@ function geoFetch(q){
     .then(r=>r.json()).then(j=>j[0]?{lat:+j[0].lat,lon:+j[0].lon}:null).catch(()=>{geoCache.delete(q);return null}));
   return geoCache.get(q);
 }
+// RÚIAN (ČÚZK) – státní registr adres, umí č. p. i č. ev.
+const RUIAN='https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN/Vyhledavaci_sluzba_nad_daty_RUIAN/MapServer/exts/GeocodeSOE/findAddressCandidates';
+const ruianCache=new Map();
+function parseHouse(st){ // vrátí {ev:true/false, n:'398', rest:'Dobříš'}
+  let m=st.match(/(?:\b(?:ev|evid)\.?\s*(?:č|čís|číslo)\.?|\bč\.?\s*ev\.?)\s*(\d+[a-z]?)/i);
+  if(m)return {ev:true,n:m[1],rest:st.replace(m[0],'').replace(/[,\s]+$/,'').trim()};
+  m=st.match(/(\d+[a-z]?)(?:\/\d+[a-z]?)?\s*$/i);
+  return m?{ev:false,n:m[1],rest:st.slice(0,m.index).replace(/\bč\.?\s*p\.?\s*$/i,'').trim()}:{ev:false,n:'',rest:st};
+}
+async function ruianFetch(text,house){
+  const key=text+'|'+house.ev+'|'+house.n;if(ruianCache.has(key))return ruianCache.get(key);
+  let hit=null;
+  try{
+    const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),7000);
+    const r=await fetch(`${RUIAN}?SingleLine=${encodeURIComponent(text)}&outSR=4326&maxLocations=8&f=json`,{signal:ctl.signal});
+    clearTimeout(tt);const j=await r.json();
+    for(const c of (j.candidates||[])){
+      const a=(c.address||(c.attributes&&c.attributes.Match_addr)||'')+'',x=+c.location.x,y=+c.location.y;
+      if(!(y>48&&y<51.2&&x>12&&x<19))continue;                         // musí být WGS84 v ČR
+      if(house.n&&!new RegExp('(^|[^\\d])'+house.n+'([^\\d]|$)').test(a))continue; // stejné číslo domu
+      if(house.ev!==/ev/i.test(a))continue;                              // č. ev. ≠ č. p.
+      if((c.score||0)<70)continue;
+      hit={lat:y,lon:x};break;
+    }
+  }catch(e){hit=undefined}                                               // nedostupné → nekešovat
+  if(hit!==undefined)ruianCache.set(key,hit);
+  return hit||null;
+}
+async function ruianGeocode(o){
+  const city=(o.city||settings.city||'').trim(),h=parseHouse((o.street||'').trim());
+  if(!h.n)return null;
+  const place=h.rest&&h.rest.toLowerCase()!==city.toLowerCase()?h.rest:'';
+  const texts=h.ev?[`${city} č.ev. ${h.n}`,`č. ev. ${h.n}, ${city}`,place?`${place} č.ev. ${h.n}, ${city}`:'']
+                  :[[place,h.n].filter(Boolean).join(' ')+', '+city,place?`${place} ${h.n}`:`${city} ${h.n}`];
+  for(const t of texts.filter(Boolean)){const r=await ruianFetch(t,h);if(r)return r}
+  return null;
+}
+// varianty adresy od nejpřesnější: celá adresa → bez „ev. č./č. p.“ → jen ulice → střed obce
+function geoVariants(o){
+  const city=(o.city||settings.city||'').trim(),st=(o.street||'').trim(),v=[];
+  const add=(q,approx)=>{q=q.replace(/\s+/g,' ').replace(/^,\s*|,\s*$/g,'').trim();if(q&&!v.some(x=>x.q===q))v.push({q,approx})};
+  add([st,city].filter(Boolean).join(', '),false);
+  const clean=st.replace(/\b(ev\.?|evid\.?)\s*(č\.?|čís\.?|číslo)\s*/ig,'').replace(/\bč\.?\s*p\.?\s*/ig,'');
+  add([clean,city].filter(Boolean).join(', '),false);
+  const name=clean.replace(/[\d\/]+[a-z]?\b/gi,'').replace(/[,.]/g,' ').trim();
+  if(name&&name.toLowerCase()!==city.toLowerCase())add([name,city].filter(Boolean).join(', '),true);
+  if(city)add(city,true);
+  return v;
+}
 async function geocode(o){
   if(!o.street||!ONWEB)return;
-  const q=[o.street,o.city||settings.city].filter(Boolean).join(', ');
-  if(o.geoQ===q&&o.lat)return;
-  const r=await geoFetch(q);
-  if(r){o.lat=r.lat;o.lon=r.lon;o.geoQ=q}else{o.lat=o.lon=null}
+  const vs=geoVariants(o),key=vs[0]&&vs[0].q;
+  if(o.geoQ===key&&o.lat)return;
+  let hit=null;
+  const ru=await ruianGeocode(o);if(ru)hit={...ru,approx:false};
+  for(let i=0;i<vs.length&&!hit;i++){
+    if(i&&!geoCache.has(vs[i].q))await new Promise(r=>setTimeout(r,1100)); // max 1 dotaz/s
+    const r=await geoFetch(vs[i].q);if(r)hit={...r,approx:vs[i].approx};
+  }
+  if(hit){o.lat=hit.lat;o.lon=hit.lon;o.geoApprox=hit.approx}else{o.lat=o.lon=null;o.geoApprox=false}
+  o.geoQ=key;
   if(orders.includes(o)){save();if(!drag)render()}
 }
 
@@ -764,7 +819,7 @@ function cardHtml(o){
   return `<article class="card st-${o.status} pay-${o.pay||'nevim'}${open?' open':''}${late?' late':''}" data-id="${o.id}">
   <div class="strip">${si>=0?`<span class="stop" title="Pořadí zastávky">${si+1}</span>`:''}<b>#${esc(o.num||'–')}</b>${o.status==='jedu'?ic('truck').replace('class="i"','class="i veze" aria-label="Vezu"'):''}${cash}<span class="tm">${right}</span></div>
   <div class="cbody">
-    <div class="addr"><b>${esc(o.street||'Bez adresy')}</b><span>${esc(o.city||settings.city||'')}</span></div>${si>=0?`<span class="eta">≈ <b>${hhmm(route.eta[o.id])}</b></span>`:''}
+    <div class="addr"><b>${esc(o.street||'Bez adresy')}</b><span>${esc(o.city||settings.city||'')}</span></div>${si>=0?`<span class="eta">${o.geoApprox?'<span title="Poloha přibližně" style="color:#FFC46B">~ </span>':''}≈ <b>${hhmm(route.eta[o.id])}</b></span>`:''}
     <button class="toggle" data-a="toggle" aria-label="${open?'Skrýt':'Zobrazit'} detail" aria-expanded="${open}"><span>${ic('down')}</span></button>
   </div>
   <div class="det">
@@ -861,8 +916,8 @@ function render(){
       const key=act.map(o=>o.id+o.status+(o.lat||'')).sort().join('|');
       if(key!==routeKey){routeKey=key;scheduleRoute()}
       if(route&&act.length){
-        const pos=new Map(route.ids.map((id,i)=>[id,i])),noGeo=act.filter(o=>!pos.has(o.id)).length;
-        html+=`<div class="rinfo">${ic('route')}<span>Trasa z ${route.from} · konec ≈ <b>${hhmm(route.end)}</b>${route.src==='odhad'?' · odhad':''}${noGeo?` · ${noGeo} bez polohy na konci`:''}</span></div>`;
+        const pos=new Map(route.ids.map((id,i)=>[id,i])),noGeo=act.filter(o=>!pos.has(o.id)).length,apx=act.filter(o=>pos.has(o.id)&&o.geoApprox).length;
+        html+=`<div class="rinfo">${ic('route')}<span>Trasa z ${route.from} · konec ≈ <b>${hhmm(route.end)}</b>${route.src==='odhad'?' · odhad':''}${apx?` · ${apx} přibližně (~)`:''}${noGeo?` · ${noGeo} bez polohy na konci`:''}</span></div>`;
         html+=[...act].sort((a,b)=>(pos.has(a.id)?pos.get(a.id):999)-(pos.has(b.id)?pos.get(b.id):999)||by(a,b)).map(cardHtml).join('');
       }else if(act.length){html+=`<div class="rinfo">${ic('route')}<span>Počítám trasu…</span></div>`+[...act].sort(by).map(cardHtml).join('')}
     }else html+=jedu.sort(by).map(cardHtml).join('')+act.filter(o=>o.status==='nova').sort(by).map(cardHtml).join('');
@@ -920,7 +975,7 @@ async function renderMap(){
   geo.forEach((o,i)=>{
     const n=pos.has(o.id)?pos.get(o.id)+1:'·';
     L.marker([o.lat,o.lon],{icon:pin(o.pay==='hotove'?'cashm':'cardm',n,34)}).addTo(mapLayers)
-      .bindPopup(`<b>#${esc(o.num)} ${esc(o.street)}</b><br>${o.pay==='hotove'?'Vybrat '+kc(o.collect):o.pay==='karta'?'Kartou '+kc(o.collect):'Zaplaceno'}${route&&route.eta[o.id]?'<br>Příjezd ≈ '+hhmm(route.eta[o.id]):''}`);
+      .bindPopup(`<b>#${esc(o.num)} ${esc(o.street)}</b>${o.geoApprox?' <i>(přibližně)</i>':''}<br>${o.pay==='hotove'?'Vybrat '+kc(o.collect):o.pay==='karta'?'Kartou '+kc(o.collect):'Zaplaceno'}${route&&route.eta[o.id]?'<br>Příjezd ≈ '+hhmm(route.eta[o.id]):''}`);
   });
   const start=myPos||PIZZERIA,pts=[start,...geo.filter(o=>pos.has(o.id))];
   const cash=act.filter(o=>o.pay==='hotove').reduce((s,o)=>s+(+o.collect||0),0);
@@ -993,10 +1048,10 @@ const PAGES={
     <div class="bigcard"><div class="n">${d.length}</div><div class="l">Doručené objednávky</div>${ic('bag').replace('class="i"','class="i deco"')}</div>
     <div class="info">${ic('info')}<span>${d.length?`Vybraná hotovost ${kc(cashDone())}.`:'Zatím žádná doručená objednávka.'}</span></div>
     <h2 class="h2">Doručení za hodinu</h2>
-    <svg class="gauge" viewBox="0 0 220 130"><path d="M20 115 A90 90 0 0 1 200 115" fill="none" stroke="#2B3146" stroke-width="12" stroke-linecap="round"/>${g>0?`<path d="M20 115 A90 90 0 0 1 ${gx.toFixed(1)} ${gy.toFixed(1)}" fill="none" stroke="#E8402B" stroke-width="12" stroke-linecap="round"/>`:''}<text x="110" y="112" text-anchor="middle" fill="#EDEAE5" font-family="Nunito" font-weight="900" font-size="46">${perH.toFixed(1).replace('.',',')}</text></svg>
+    <svg class="gauge" viewBox="0 0 220 130"><path d="M20 115 A90 90 0 0 1 200 115" fill="none" stroke="#2B3146" stroke-width="12" stroke-linecap="round"/>${g>0?`<path d="M20 115 A90 90 0 0 1 ${gx.toFixed(1)} ${gy.toFixed(1)}" fill="none" stroke="#E8402B" stroke-width="12" stroke-linecap="round"/>`:''}<text x="110" y="112" text-anchor="middle" fill="#EDEAE5" font-family="Fira Sans" font-weight="900" font-size="46">${perH.toFixed(1).replace('.',',')}</text></svg>
     <div class="info">${ic('info')}<span>${sh?`Ve směně ${dur(Date.now()-sh)}.`:'Směna začne s první objednávkou.'}</span></div>
     <h2 class="h2">Průměrná doba doručení</h2>
-    <svg class="ring" viewBox="0 0 190 190"><circle cx="95" cy="95" r="80" fill="none" stroke="#2B3146" stroke-width="10"/>${avg?`<circle cx="95" cy="95" r="80" fill="none" stroke="#E8402B" stroke-width="10" stroke-linecap="round" stroke-dasharray="${Math.min(1,avg/60)*502} 502" transform="rotate(-90 95 95)"/>`:''}<text x="95" y="108" text-anchor="middle" fill="#EDEAE5" font-family="Nunito" font-weight="900" font-size="44">${avg}′</text></svg>
+    <svg class="ring" viewBox="0 0 190 190"><circle cx="95" cy="95" r="80" fill="none" stroke="#2B3146" stroke-width="10"/>${avg?`<circle cx="95" cy="95" r="80" fill="none" stroke="#E8402B" stroke-width="10" stroke-linecap="round" stroke-dasharray="${Math.min(1,avg/60)*502} 502" transform="rotate(-90 95 95)"/>`:''}<text x="95" y="108" text-anchor="middle" fill="#EDEAE5" font-family="Fira Sans" font-weight="900" font-size="44">${avg}′</text></svg>
     <div class="info${avg>45?' warn2':''}">${ic(avg>45?'alert':'info')}<span>${avg?`Od vyfocení účtenky po doručení průměrně ${avg} min.`:'Ukáže se po prvním doručení.'}</span></div>
     <h2 class="h2">Doručení podle hodin</h2><div class="panel"><div class="bars">${bars.join('')}</div><div style="height:22px"></div></div>`;
   },
@@ -1084,7 +1139,7 @@ render();
 maybeFb();
 try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast('Appka aktualizována'),400)}}catch(e){}
 setTimeout(startGeo,1500);
-(async()=>{for(const o of orders.filter(o=>o.street&&!o.geoQ&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
+(async()=>{for(const o of orders.filter(o=>o.street&&!o.lat&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
 window.__app={parseReceipt,prepImage};
 }
 </script>
