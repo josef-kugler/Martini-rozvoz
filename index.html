@@ -377,7 +377,7 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-24.11';
+const APP_VERSION='2026-11-24.12';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -1103,7 +1103,7 @@ async function renderMap(){
   updateMe();
   if(route&&pts.length>1){
     const line=await routeLine(pts);
-    if(tab==='M'){L.polyline(line,{color:'#fff',weight:6,opacity:.95}).addTo(mapLayers);L.polyline(line,{color:'#E8402B',weight:2,opacity:.9,dashArray:'1 9'}).addTo(mapLayers)}
+    if(tab==='M'){L.polyline(line,{color:'#fff',weight:11,opacity:.95,lineCap:'round',lineJoin:'round',interactive:false}).addTo(mapLayers);L.polyline(line,{color:'#D91E0B',weight:6,opacity:1,lineCap:'round',lineJoin:'round',interactive:false}).addTo(mapLayers)}
   }
 }
 
