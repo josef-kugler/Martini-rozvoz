@@ -233,6 +233,7 @@ a.dr{color:var(--ink)}
 :root[data-theme=light]{color-scheme:light;--bg:#F4F4F6;--card:#FFFFFF;--card2:#ECEEF3;--top:#F4F4F6;--line:rgba(0,0,0,.08);--field:#D3D7E0;--soft:rgba(0,0,0,.05);
   --ink:#14161F;--muted:#62677D;--faint:#A9AEC0;--red-ink:#C7321F;--track:#E1E4EB;--money:#1E7A1D;--sheet:#FFFFFF;--drawer:#FFFFFF;--glass:rgba(255,255,255,.97);--head2:#FFFFFF}
 :root[data-theme=light] .card{box-shadow:0 1px 4px rgba(0,0,0,.06)}
+:root[data-theme=light] .warn{background:#FFF1DC;color:#7A4100}
 :root[data-theme=light] .toast{background:#14161F;color:#fff}
 :root[data-theme=light] .toast button{color:#FF8A75}
 :root[data-theme=light] .mk{box-shadow:0 2px 6px rgba(0,0,0,.25)}
@@ -284,6 +285,16 @@ a.dr{color:var(--ink)}
   .addr b{font-size:17px}
 }
 @media(max-width:350px){.cam .ct{display:none}.cam{padding:0 12px}.brand b{font-size:19px}}
+.thq{text-align:center;margin:22px 0 4px}
+.thq b{display:block;font:800 22px/1.2 var(--head)}
+.thq span{display:block;color:var(--muted);font-size:16px;margin:4px 0 12px}
+.thumbs{display:flex;background:var(--card);border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.08);overflow:hidden}
+.thumbs button{flex:1;height:64px;display:grid;place-items:center;color:var(--muted)}
+.thumbs button+button{border-left:1px solid var(--line)}
+.thumbs button svg{width:28px;height:28px}
+.thumbs button.on[data-v="1"]{background:rgba(77,184,76,.15);color:var(--green-ink)}
+.thumbs button.on[data-v="-1"]{background:rgba(232,64,43,.13);color:var(--red-ink)}
+.srow.ck>svg.i:first-child{color:var(--ink)}
 /* hodnocení */
 .fb{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) 20px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .4s var(--ease),visibility 0s .4s;visibility:hidden}
 .fb.on{transform:none;visibility:visible;transition:transform .4s var(--ease)}
@@ -377,7 +388,8 @@ a.dr{color:var(--ink)}
 <script>
 {
 /* ================= verze + automatická aktualizace ================= */
-const APP_VERSION='2026-11-24.12';
+const APP_VERSION='2026-11-24.14';
+const NEWS='nové Nastavení a oznámení na telefonu';
 let updChecked=0;
 async function checkUpdate(){
   if(!/^https?:$/.test(location.protocol)||Date.now()-updChecked<60000)return;updChecked=Date.now();
@@ -421,6 +433,11 @@ const P={
   play:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',
   crosshair:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  bike:'<circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zM12 17.5V14l-3-3 4-3 2 3h2"/>',
+  walk:'<circle cx="13" cy="4" r="1.5"/><path d="m9 20 3-6 3 3v4M10 12l1-4 4 2 2 3M8 13l1-5"/>',
+  up:'<path d="M7 10v12M15 5.9 14 10h5.8a2 2 0 0 1 1.9 2.6l-2.3 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.8a2 2 0 0 0 1.8-1.1L12 2a3.1 3.1 0 0 1 3 3.9z"/>',
+  down2:'<path d="M17 14V2M9 18.1 10 14H4.2a2 2 0 0 1-1.9-2.6l2.3-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.8a2 2 0 0 0-1.8 1.1L12 22a3.1 3.1 0 0 1-3-3.9z"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
   bill:'<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
   ccard:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
   money:'<path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
@@ -806,23 +823,28 @@ function freshPos(){ // jednorázově hned přesnou polohu (při otevření mapy
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){geoOn=false;startGeo();freshPos()}});
 const fx=n=>(+n).toFixed(6);
+const MODE=()=>settings.mode||'car';
+const OSRM=()=>({car:'https://router.project-osrm.org/{s}/v1/driving/',bike:'https://routing.openstreetmap.de/routed-bike/{s}/v1/bike/',foot:'https://routing.openstreetmap.de/routed-foot/{s}/v1/foot/'})[MODE()];
+const SPEED=()=>({car:35,bike:15,foot:5})[MODE()];
 
 /* ================= trasa: nejlepší pořadí zastávek ================= */
-const PIZZERIA={lat:49.78165,lon:14.16745}; // Pizzeria Martini, Mírové náměstí 190, Dobříš (přibližně)
+const PIZZERIA={lat:49.78165,lon:14.16745}; // Pizzeria Martini, Mírové náměstí 190, Dobříš – zpřesní se níže
+const PIZ_ADDR='Mírové náměstí 190';
+function setPizzeria(lat,lon,src){PIZZERIA.lat=lat;PIZZERIA.lon=lon;settings.piz={lat,lon,src};saveSettings();matCache.clear();routeKey='';route=null;if(map)lastFit='';render()}
 let route=null,routeBusy=false,routeT=null,routeKey='',routePos=null;
 const hav=(a,b)=>{const R=6371e3,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r,x=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
 const matCache=new Map();
 async function travelMatrix(pts){ // časy jízdy v sekundách po silnicích (OSRM), jinak odhad vzdušnou čarou
-  const key=pts.map(p=>(+p.lat).toFixed(4)+','+(+p.lon).toFixed(4)).join(';');
+  const key=MODE()+pts.map(p=>(+p.lat).toFixed(4)+','+(+p.lon).toFixed(4)).join(';');
   if(matCache.has(key))return matCache.get(key);
   let M=null,src='silnice';
   try{
     const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),6000);
-    const r=await fetch('https://router.project-osrm.org/table/v1/driving/'+pts.map(p=>`${fx(p.lon)},${fx(p.lat)}`).join(';')+'?annotations=duration',{signal:ctl.signal});
+    const r=await fetch(OSRM().replace('{s}','table')+pts.map(p=>`${fx(p.lon)},${fx(p.lat)}`).join(';')+'?annotations=duration',{signal:ctl.signal});
     clearTimeout(tt);const j=await r.json();
     if(j.code==='Ok'&&j.durations)M=j.durations.map(row=>row.map(v=>v==null?1e6:v));
   }catch(e){}
-  if(!M){M=pts.map(a=>pts.map(b=>hav(a,b)*1.35/(35/3.6)));src='odhad'}
+  if(!M){M=pts.map(a=>pts.map(b=>hav(a,b)*1.35/(SPEED()/3.6)));src='odhad'}
   const res={M,src};matCache.set(key,res);return res;
 }
 const STOP_S=120; // 2 min na předání u dveří
@@ -868,11 +890,11 @@ function navTarget(o){
   const text=[o.street,o.city||settings.city].filter(Boolean).join(', ');
   const ll=o.lat?`${o.lat},${o.lon}`:'';
   const e=encodeURIComponent(ll||text);
-  const g=`https://www.google.com/maps/dir/?api=1&destination=${e}&travelmode=driving&dir_action=navigate`;
+  const md=MODE(),g=`https://www.google.com/maps/dir/?api=1&destination=${e}&travelmode=${({car:'driving',bike:'bicycling',foot:'walking'})[md]}&dir_action=navigate`;
   switch(settings.navApp){
     case 'waze':return {url:ll?`https://waze.com/ul?ll=${ll}&navigate=yes`:`https://waze.com/ul?q=${encodeURIComponent(text)}&navigate=yes`};
-    case 'mapy':return {url:o.lat?`https://mapy.com/fnc/v1/route?mapset=traffic${myPos?`&start=${fx(myPos.lon)},${fx(myPos.lat)}`:''}&end=${fx(o.lon)},${fx(o.lat)}&routeType=car_fast_traffic&navigate=true`:`https://mapy.com/fnc/v1/search?query=${encodeURIComponent(text)}`};
-    case 'apple':return {url:`https://maps.apple.com/?daddr=${e}&dirflg=d`};
+    case 'mapy':return {url:o.lat?`https://mapy.com/fnc/v1/route?mapset=traffic${myPos?`&start=${fx(myPos.lon)},${fx(myPos.lat)}`:''}&end=${fx(o.lon)},${fx(o.lat)}&routeType=${({car:'car_fast_traffic',bike:'bike_road',foot:'foot_fast'})[md]}&navigate=true`:`https://mapy.com/fnc/v1/search?query=${encodeURIComponent(text)}`};
+    case 'apple':return {url:`https://maps.apple.com/?daddr=${e}&dirflg=${({car:'d',bike:'d',foot:'w'})[md]}`};
     default:return {url:g};
   }
 }
@@ -1018,18 +1040,22 @@ function render(){
 $('btnRoute').onclick=()=>{settings.sort=settings.sort==='route'?'time':'route';saveSettings();routeKey='';if(settings.sort==='route'){startGeo();route=null}render();toast(settings.sort==='route'?'Řadím podle trasy':'Řadím podle času doručení')};
 $('tabA').onclick=()=>{tab='A';render()};$('tabD').onclick=()=>{tab='D';render()};
 $('tabM').onclick=()=>{tab='M';userMoved=false;lastFit='';startGeo();freshPos();routeKey='';render();computeRoute()};
-setInterval(render,30000);
+setInterval(()=>{render();
+  if(settings.lateAlert===false)return;
+  orders.filter(o=>o.status!=='dorucena'&&!o.lateNotified).forEach(o=>{const t=timing(o);if(t.diff!=null&&t.diff<=(settings.lateMin??5)){o.lateNotified=1;save();beep(660);
+    const msg=t.diff<0?`#${o.num} je po čase (${-t.diff} min)`:`#${o.num} – doručit do ${t.diff} min`;toast(msg);
+    notify(msg,[o.street,o.city].filter(Boolean).join(', ')+(o.pay==='hotove'&&o.collect?` · vybrat ${kc(o.collect)}`:''),'late-'+o.id)}})},30000);
 
 /* ================= mapa s trasou ================= */
 let map=null,mapLayers=null,meMarker=null,lastFit='',userMoved=false,fitting=false,fitAllNow=null;
 const geoCache2=new Map();
 async function routeLine(pts){ // geometrie trasy po silnicích (OSRM), jinak rovné čáry
-  const key=pts.map(p=>(+p.lat).toFixed(4)+','+(+p.lon).toFixed(4)).join(';');
+  const key=MODE()+pts.map(p=>(+p.lat).toFixed(4)+','+(+p.lon).toFixed(4)).join(';');
   if(geoCache2.has(key))return geoCache2.get(key);
   let line=pts.map(p=>[p.lat,p.lon]);
   try{
     const ctl=new AbortController(),tt=setTimeout(()=>ctl.abort(),6000);
-    const r=await fetch('https://router.project-osrm.org/route/v1/driving/'+pts.map(p=>`${fx(p.lon)},${fx(p.lat)}`).join(';')+'?overview=full&geometries=geojson',{signal:ctl.signal});
+    const r=await fetch(OSRM().replace('{s}','route')+pts.map(p=>`${fx(p.lon)},${fx(p.lat)}`).join(';')+'?overview=full&geometries=geojson',{signal:ctl.signal});
     clearTimeout(tt);const j=await r.json();
     if(j.code==='Ok'&&j.routes&&j.routes[0])line=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
   }catch(e){}
@@ -1078,7 +1104,9 @@ async function renderMap(){
   setTimeout(()=>map.invalidateSize(),50);
   const act=orders.filter(o=>o.status!=='dorucena');
   mapLayers.clearLayers();
-  L.marker([PIZZERIA.lat,PIZZERIA.lon],{icon:pin('piz',ic('store'),38)}).addTo(mapLayers).bindPopup('Pizzeria Martini');
+  const pm=L.marker([PIZZERIA.lat,PIZZERIA.lon],{icon:pin('piz',ic('store'),38),draggable:true,autoPan:true}).addTo(mapLayers)
+    .bindPopup('<b>Pizzeria Martini</b><br>Špatně? Podrž a přetáhni ikonu na správné místo.');
+  pm.on('dragend',()=>{const ll=pm.getLatLng();setPizzeria(ll.lat,ll.lng,'manual');toast('Poloha pizzerie uložena')});
   msg.hidden=true;
   if(!act.length){card.hidden=false;card.innerHTML=`<div class="big">Žádné objednávky</div><div class="lbl2">Vyfoť účtenku a trasa se tu nakreslí.</div><button class="btn pri" data-add="cam">${ic('cam')}Vyfotit účtenku</button>`;return}
   const pos=route?new Map(route.ids.map((id,i)=>[id,i])):new Map();
@@ -1183,7 +1211,7 @@ const cashDone=()=>orders.filter(o=>o.status==='dorucena'&&o.pay==='hotove').red
 const czDay=t=>new Date(t).toLocaleDateString('cs-CZ',{day:'numeric',month:'long'});
 const dur=ms=>{const m=Math.max(0,Math.round(ms/60000));return m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`};
 let curPage='',pageStack=[],statRange='den';
-const TTL={profil:'Profil',doruc:'Nastavení doručování',prehled:'Můj přehled',finance:'Finance',smeny:'Směny',stats:'Statistiky',nastaveni:'Nastavení',vzhled:'Vzhled',navapp:'Navigační aplikace',info:'Informační centrum',edit:'Upravit'};
+const TTL={profil:'Profil',doruc:'Nastavení doručování',prehled:'Můj přehled',finance:'Finance',smeny:'Směny',stats:'Statistiky',nastaveni:'Nastavení',vzhled:'Vzhled',navapp:'Navigační aplikace',mode:'Navigační režim',tyden:'Začít týden od',zvuk:'Zvuk a vibrace',oznameni:'Oznámení',nazor:'Zpětná vazba',info:'Informační centrum',edit:'Upravit'};
 function openPage(p,arg){
   if(curPage&&$('page').classList.contains('on'))pageStack.push([curPage,pageArg]);
   showPage(p,arg);
@@ -1205,6 +1233,9 @@ const done=()=>orders.filter(o=>o.status==='dorucena');
 const chev=`<svg class="i chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>`;
 const row=(go,label,val,sub)=>`<button class="srow" ${go}><span class="t">${label}${sub?`<small>${sub}</small>`:''}</span>${val!=null?`<span class="val">${val}</span>`:''}${chev}</button>`;
 const NAVN={mapy:'Mapy.com',google:'Google Mapy',waze:'Waze',apple:'Apple Mapy'};
+const MODEN={car:'Auto',bike:'Kolo',foot:'Pěší'};
+const DAYS=['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'];
+const SNDN={short:'Krátký',long:'Dlouhý',off:'Vypnuto'};
 const THN={auto:'Podle zařízení',light:'Světlý',dark:'Tmavý'};
 // odhad ujeté vzdálenosti: pizzerie → zastávky v pořadí doručení (nová várka = návrat do pizzerie), ×1,3 na silnice
 function kmOf(list){
@@ -1235,12 +1266,14 @@ const PAGES={
   doruc:()=>`<h1 class="h1">Přizpůsob si nastavení doručování</h1>
     <button class="srow" data-e="city">${ic('pin')}<span class="t">Doručovací oblast<small>${esc(settings.city||'Nenastaveno')}</small></span>${chev}</button>
     <button class="srow" data-go="navapp">${ic('nav')}<span class="t">Navigace<small>${NAVN[settings.navApp]}</small></span>${chev}</button>
+    <button class="srow" id="pizHere">${ic('store')}<span class="t">Pizzerie je tady<small>${settings.piz&&settings.piz.src==='manual'?'Nastaveno ručně':'Mírové náměstí 190, Dobříš'} · klepni, když stojíš u pizzerie</small></span></button>
+    <button class="srow" id="pizReset"><span class="t" style="padding-left:42px">Obnovit podle adresy<small>Znovu dohledat Mírové náměstí 190</small></span></button>
     <div class="srow">${ic('route')}<span class="t">Řadit podle trasy<small>Nejlepší pořadí zastávek od tvé polohy</small></span><button class="sw ${settings.sort==='route'?'on':''}" data-t="sort" role="switch" aria-checked="${settings.sort==='route'}" aria-label="Řadit podle trasy"></button></div>`,
   prehled:PAGES_prehled,
   finance:PAGES_finance,
   smeny:PAGES_smeny,
   stats:()=>{
-    const now=new Date(),t0={den:new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),tyden:(()=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate());d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()})(),mesic:new Date(now.getFullYear(),now.getMonth(),1).getTime(),vse:0}[statRange];
+    const now=new Date(),t0={den:new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),tyden:(()=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()),ws=settings.weekStart??1;d.setDate(d.getDate()-((d.getDay()-ws+7)%7));return d.getTime()})(),mesic:new Date(now.getFullYear(),now.getMonth(),1).getTime(),vse:0}[statRange];
     const cur=summarize(done().filter(o=>(o.done||0)>=t0)),hs=shifts.filter(x=>x.end>=t0);
     const tot={count:cur.count,cash:cur.cash,card:cur.card,paid:cur.paid,km:cur.km};
     hs.forEach(x=>{tot.count+=x.count;tot.cash+=x.cash||0;tot.card+=x.card||0;tot.paid+=x.paid||0;tot.km+=x.km||0});
@@ -1260,15 +1293,53 @@ const PAGES={
   nastaveni:()=>`<h1 class="h1">Nastavení</h1>
     <h2 class="h2">Navigace</h2>
     ${row('data-go="navapp"','Navigační aplikace',NAVN[settings.navApp])}
+    ${row('data-go="mode"','Navigační režim',MODEN[MODE()])}
     <h2 class="h2">Displej a zvuk</h2>
     ${row('data-go="vzhled"','Vzhled',THN[settings.theme||'light'])}
-    <div class="srow"><span class="t">Zvuk a vibrace<small>Pípnutí při potvrzení sliderem a nové objednávce</small></span><button class="sw ${settings.sound!==false?'on':''}" data-t="sound" role="switch" aria-checked="${settings.sound!==false}" aria-label="Zvuk a vibrace"></button></div>
+    ${row('data-go="tyden"','Začít týden od',DAYS[settings.weekStart??1])}
+    ${row('data-go="zvuk"','Zvuk a vibrace',SNDN[settings.soundType||(settings.sound===false?'off':'short')])}
     <h2 class="h2">Komunikace</h2>
-    ${row('data-fb="1"','Pošli svůj názor')}
-    ${row('data-e="fbEmail"','E-mail pro hodnocení',null,esc(settings.fbEmail||'Nenastaveno'))}
-    <h2 class="h2">Data</h2>
+    ${row('data-go="oznameni"','Oznámení')}
+    ${row('data-go="nazor"','Pošli svůj názor')}
+    <h2 class="h2">Účet</h2>
+    ${row('data-go="profil"','Profil',esc(settings.name||''))}
     <button class="srow" id="wipe"><span class="t" style="color:var(--red-ink)">Smazat všechna data appky<small>Objednávky, směny i nastavení v tomhle telefonu</small></span></button>
     <p class="note2" style="margin-top:22px">Verze appky: ${APP_VERSION}</p>`,
+  mode:()=>`<h1 class="h1">Navigační režim</h1>
+    ${['car','bike','foot'].map(v=>`<button class="srow ck" data-md="${v}">${ic({car:'car',bike:'bike',foot:'walk'}[v])}<span class="t">${MODEN[v]}</span>${MODE()===v?ic('check'):''}</button>`).join('')}
+    <p class="note2" style="margin-top:16px">Podle režimu se počítá pořadí zastávek, čas příjezdu i trasa v navigaci.${settings.navApp==='waze'&&MODE()!=='car'?' Waze umí jen auto.':''}</p>`,
+  tyden:()=>`<h1 class="h1">Začít týden od</h1>
+    ${[0,1,2,3,4,5,6].map(v=>`<button class="srow ck" data-wd="${v}"><span class="t">${DAYS[v]}${v===1?' (výchozí)':''}</span>${(settings.weekStart??1)===v?ic('check'):''}</button>`).join('')}`,
+  zvuk:()=>{const s=settings.soundType||(settings.sound===false?'off':'short');return `<h1 class="h1">Zvuk a vibrace</h1>
+    <p class="lead" style="margin-bottom:6px;color:var(--muted);font-size:16px">Zvuk při nové objednávce, potvrzení sliderem a upozornění na zpoždění. Klepnutím si ho přehraješ.</p>
+    ${['short','long','off'].map(v=>`<button class="srow ck" data-snd="${v}"><span class="t">${SNDN[v]}</span>${s===v?ic('check'):''}</button>`).join('')}
+    <div class="srow"><span class="t">Vibrace<small>Jen na Androidu, iPhone vibrace webu nepovoluje</small></span><button class="sw ${settings.vibrate!==false?'on':''}" data-t="vibrate" role="switch" aria-checked="${settings.vibrate!==false}" aria-label="Vibrace"></button></div>`},
+  oznameni:()=>{const st=notifState();return `<h1 class="h1">Oznámení</h1>
+    <h2 class="h2" style="font-size:22px;margin-top:6px">Oznámení na telefonu</h2>
+    <p class="note2">Upozornění v horní liště telefonu i se zamčenou obrazovkou – i když se díváš do navigace.</p>
+    ${st==='need-home'?`<div class="warn" style="margin-top:12px">Na iPhonu oznámení fungují jen z ikony na ploše: v Safari dej <b>Sdílet → Přidat na plochu</b> a appku otevři odtamtud.</div>`
+     :st==='unsupported'?`<div class="warn" style="margin-top:12px">Tenhle prohlížeč oznámení nepodporuje.</div>`
+     :st==='denied'?`<div class="warn" style="margin-top:12px">Oznámení jsou zakázaná. Povol je v <b>Nastavení iPhonu → Oznámení → Martini</b>.</div>`
+     :st==='default'?`<div class="btns" style="max-width:none;margin-top:12px"><button class="btn pri" id="nPerm">${ic('bell')}Povolit oznámení</button></div>`
+     :`<div class="srow"><span class="t">Posílat oznámení</span><button class="sw ${settings.pushOn?'on':''}" data-t="pushOn" role="switch" aria-checked="${!!settings.pushOn}" aria-label="Posílat oznámení"></button></div>
+       ${settings.pushOn?`<button class="srow" id="nTest">${ic('bell')}<span class="t">Poslat zkušební oznámení</span>${chev}</button>`:''}`}
+    <h2 class="h2" style="font-size:22px;margin-top:6px">Zpoždění</h2>
+    <p class="note2">Pípne a upozorní, když se blíží čas doručení – v appce a s povolenými oznámeními i v liště telefonu.</p>
+    <div class="srow"><span class="t">Upozornit na zpoždění<small>Kolik minut předem upozornit</small></span><button class="sw ${settings.lateAlert!==false?'on':''}" data-t="lateAlert" role="switch" aria-checked="${settings.lateAlert!==false}" aria-label="Upozornit na zpoždění"></button></div>
+    ${settings.lateAlert!==false?`<div class="seg seg-s" id="lateMin" style="margin:12px 0 4px">${[[0,'V čas'],[5,'5 min'],[10,'10 min']].map(([v,l])=>`<button data-v="${v}" class="${(settings.lateMin??5)===v?'on':''}">${l}</button>`).join('')}</div>`:''}
+    <h2 class="h2" style="font-size:22px">Novinky v appce</h2>
+    <p class="note2">Po aktualizaci ukáže krátké shrnutí, co je nového.</p>
+    <div class="srow"><span class="t">Ukazovat novinky</span><button class="sw ${settings.news!==false?'on':''}" data-t="news" role="switch" aria-checked="${settings.news!==false}" aria-label="Ukazovat novinky"></button></div>
+    <h2 class="h2" style="font-size:22px">Denní hodnocení</h2>
+    <p class="note2">Jednou denně se při spuštění zeptá, jak se ti s appkou jezdí.</p>
+    <div class="srow"><span class="t">Ptát se na hodnocení</span><button class="sw ${settings.dailyFb!==false?'on':''}" data-t="dailyFb" role="switch" aria-checked="${settings.dailyFb!==false}" aria-label="Ptát se na hodnocení"></button></div>
+    <p class="note2" style="margin-top:18px">Appka nemá server, takže oznamuje jen to, co sama spočítá v telefonu (zpoždění). Když je dlouho zavřená, iPhone ji uspí a oznámení nepřijdou.</p>`},
+  nazor:()=>`<h1 class="h1">Zpětná vazba</h1>
+    ${[['app','Funkčnost aplikace','Jak funguje appka a časy příjezdu?'],['ocr','Čtení účtenek','Jak dobře appka čte účtenky ze Speedla?'],['route','Trasa a navigace','Jak sedí pořadí zastávek a navigace?']].map(([k,t,q])=>`
+      <div class="thq"><b>${t}</b><span>${q}</span><div class="thumbs" data-k="${k}"><button data-v="1" aria-label="Dobré">${ic('up')}</button><button data-v="-1" aria-label="Špatné">${ic('down2')}</button></div></div>`).join('')}
+    <label class="fld" style="margin-top:18px"><span>Komentář</span><textarea id="nzC" placeholder="Co zlepšit, co nefunguje…"></textarea></label>
+    ${row('data-e="fbEmail"','E-mail pro zpětnou vazbu',null,esc(settings.fbEmail||'Nenastaveno – uloží se jen v telefonu'))}
+    <div class="btns" style="max-width:none;margin-top:16px"><button class="btn pri" id="nzSend" disabled>Odeslat zpětnou vazbu</button></div>`,
   vzhled:()=>`<h1 class="h1">Vzhled</h1><h2 class="h2">Vzhled</h2>
     ${['auto','light','dark'].map(v=>`<button class="srow ck" data-th="${v}"><span class="t">${THN[v]==='Podle zařízení'?'Použít vzhled zařízení':THN[v]}</span>${(settings.theme||'light')===v?ic('check'):''}</button>`).join('')}
     <h2 class="h2">Animace</h2>
@@ -1279,9 +1350,36 @@ const PAGES={
   info:PAGES_info
 };
 const BIND={
-  profil:()=>bindRows(),doruc:()=>bindRows(),nastaveni:()=>{bindRows();
+  profil:()=>bindRows(),doruc:()=>{bindRows();
+    $('pizHere').onclick=()=>{
+      const use=(lat,lon,acc)=>{if(acc>60){toast(`Poloha je nepřesná (± ${Math.round(acc)} m), zkus to venku`);return}
+        setPizzeria(lat,lon,'manual');showPage('doruc');toast('Pizzerie uložena na tvou polohu')};
+      if(myPos&&Date.now()-myPos.t<15000&&myPos.acc&&myPos.acc<=60)return use(myPos.lat,myPos.lon,myPos.acc);
+      if(!navigator.geolocation)return toast('Poloha není k dispozici');toast('Zjišťuji polohu…');startGeo();
+      navigator.geolocation.getCurrentPosition(p=>use(p.coords.latitude,p.coords.longitude,p.coords.accuracy||0),()=>toast('Polohu se nepodařilo zjistit – povol polohu'),{enableHighAccuracy:true,maximumAge:5000,timeout:15000})};
+    $('pizReset').onclick=async()=>{toast('Hledám adresu…');let r=await ruianGeocode({street:PIZ_ADDR,city:'Dobříš'});if(!r)r=await geoFetch(PIZ_ADDR+', Dobříš');
+      if(r){setPizzeria(r.lat,r.lon,'auto');showPage('doruc');toast('Pizzerie podle adresy')}else toast('Adresu se nepodařilo najít')}},nastaveni:()=>{bindRows();
     let armed=false;$('wipe').onclick=()=>{if(!armed){armed=true;$('wipe').querySelector('.t').firstChild.textContent='Klepni znovu – smaže úplně vše';return}
       try{Object.keys(localStorage).filter(k=>k.startsWith('martini.')).forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()}},
+  mode:()=>{$('pBody').querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{settings.mode=b.dataset.md;saveSettings();matCache.clear();geoCache2.clear();routeKey='';route=null;showPage('mode');toast('Režim: '+MODEN[settings.mode])})},
+  tyden:()=>{$('pBody').querySelectorAll('[data-wd]').forEach(b=>b.onclick=()=>{settings.weekStart=+b.dataset.wd;saveSettings();showPage('tyden')})},
+  zvuk:()=>{bindRows();$('pBody').querySelectorAll('[data-snd]').forEach(b=>b.onclick=()=>{settings.soundType=b.dataset.snd;settings.sound=b.dataset.snd!=='off';saveSettings();showPage('zvuk');if(b.dataset.snd!=='off')beep(988)})},
+  oznameni:()=>{bindRows();
+    if($('nPerm'))$('nPerm').onclick=async()=>{let r='denied';try{r=await Notification.requestPermission()}catch(e){}
+      if(r==='granted'){settings.pushOn=true;saveSettings();notify('Oznámení zapnutá','Takhle tě upozorním na zpoždění objednávky.','test')}
+      showPage('oznameni');toast(r==='granted'?'Oznámení povolena':'Oznámení nebyla povolena')};
+    if($('nTest'))$('nTest').onclick=async()=>{const ok=await notify('Zkušební oznámení','#63 Dělnická 767 – doručit do 5 min · vybrat 309 Kč','test');toast(ok?'Oznámení odesláno':'Nepodařilo se – nahraj na GitHub i soubor sw.js')};
+    $('pBody').querySelectorAll('.sw[data-t=pushOn]').forEach(x=>x.addEventListener('click',()=>setTimeout(()=>showPage('oznameni'),260)));$('pBody').querySelectorAll('.sw[data-t=lateAlert]').forEach(x=>x.addEventListener('click',()=>setTimeout(()=>showPage('oznameni'),260)));
+    if($('lateMin'))$('lateMin').onclick=e=>{const b=e.target.closest('button');if(!b)return;settings.lateMin=+b.dataset.v;saveSettings();orders.forEach(o=>delete o.lateNotified);save();showPage('oznameni')}},
+  nazor:()=>{bindRows();const v={};
+    $('pBody').querySelectorAll('.thumbs').forEach(t=>t.onclick=e=>{const b=e.target.closest('button');if(!b)return;v[t.dataset.k]=+b.dataset.v;
+      [...t.children].forEach(x=>x.classList.toggle('on',x===b));$('nzSend').disabled=false});
+    $('nzC').oninput=()=>{if($('nzC').value.trim())$('nzSend').disabled=false};
+    $('nzSend').onclick=()=>{const c=$('nzC').value.trim(),lab={app:'Funkčnost aplikace',ocr:'Čtení účtenek',route:'Trasa a navigace'};
+      try{const l=JSON.parse(localStorage.getItem(FBKEY)||'[]');l.push({at:Date.now(),thumbs:v,comment:c,v:APP_VERSION});localStorage.setItem(FBKEY,JSON.stringify(l.slice(-50)))}catch(e){}
+      closePage();toast('Díky za zpětnou vazbu!');
+      if(settings.fbEmail){const body=Object.entries(v).map(([k,x])=>`${lab[k]}: ${x>0?'👍':'👎'}`).join('\n')+(c?`\n\n${c}`:'')+`\n\nVerze ${APP_VERSION}`;
+        setTimeout(()=>{location.href=`mailto:${encodeURIComponent(settings.fbEmail)}?subject=${encodeURIComponent('Martini rozvoz – zpětná vazba')}&body=${encodeURIComponent(body)}`},300)}}},
   vzhled:()=>{bindRows();$('pBody').querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.th;saveSettings();applyTheme();showPage('vzhled')})},
   navapp:()=>{$('pBody').querySelectorAll('[data-nv]').forEach(b=>b.onclick=()=>{settings.navApp=b.dataset.nv;saveSettings();showPage('navapp');toast('Navigace: '+NAVN[settings.navApp])})},
   stats:()=>{$('stRange').onclick=e=>{const b=e.target.closest('button');if(!b)return;statRange=b.dataset.r;showPage('stats')}},
@@ -1305,8 +1403,8 @@ function bindRows(){
   b.querySelectorAll('[data-fb]').forEach(x=>x.onclick=()=>openFb());
   b.querySelectorAll('.sw[data-t]').forEach(x=>x.onclick=()=>{const t=x.dataset.t;
     if(t==='sort'){settings.sort=settings.sort==='route'?'time':'route';routeKey='';route=null;if(settings.sort==='route')startGeo()}
-    else settings[t]=t==='sound'?settings.sound===false:!settings[t];
-    saveSettings();applyTheme();const on=t==='sort'?settings.sort==='route':t==='sound'?settings.sound!==false:!!settings[t];x.classList.toggle('on',on);x.setAttribute('aria-checked',on)});
+    else if(['sound','vibrate','lateAlert','news','dailyFb'].includes(t))settings[t]=settings[t]===false;else settings[t]=!settings[t];
+    saveSettings();applyTheme();const on=t==='sort'?settings.sort==='route':['sound','vibrate','lateAlert','news','dailyFb'].includes(t)?settings[t]!==false:!!settings[t];x.classList.toggle('on',on);x.setAttribute('aria-checked',on)});
 }
 function applyTheme(){
   const t=settings.theme||'light',dark=t==='dark'||(t==='auto'&&!(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches));
@@ -1318,7 +1416,29 @@ if(!settings.themeV2){settings.theme='light';settings.themeV2=1;saveSettings()}
 applyTheme();
 // zvuk + vibrace (krátké pípnutí)
 let actx=null;
-function beep(f=880){if(settings.sound===false)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.15,actx.currentTime);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+.18);o.connect(g).connect(actx.destination);o.start();o.stop(actx.currentTime+.2)}catch(e){}if(navigator.vibrate)navigator.vibrate(15)}
+/* systémová oznámení */
+let swReg=null;
+const NOTIF_OK=()=>'Notification' in window;
+const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const IS_STANDALONE=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+if(ONWEB&&'serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(r=>{swReg=r}).catch(()=>{});
+async function notify(title,body,tag){
+  if(!settings.pushOn||!NOTIF_OK()||Notification.permission!=='granted')return false;
+  const opt={body,tag:tag||'martini',renotify:true,icon:document.querySelector('link[rel=apple-touch-icon]')?.href,badge:undefined,vibrate:[60,40,60]};
+  try{const r=swReg||(navigator.serviceWorker&&await navigator.serviceWorker.getRegistration());if(r){await r.showNotification(title,opt);return true}}catch(e){}
+  try{new Notification(title,opt);return true}catch(e){}
+  return false;
+}
+function notifState(){
+  if(!NOTIF_OK())return IS_IOS&&!IS_STANDALONE?'need-home':'unsupported';
+  if(IS_IOS&&!IS_STANDALONE)return 'need-home';
+  return Notification.permission; // default | granted | denied
+}
+function tone(f,at,len){const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(.18,at+.01);g.gain.exponentialRampToValueAtTime(.001,at+len);o.connect(g).connect(actx.destination);o.start(at);o.stop(at+len+.02)}
+function beep(f=880,force){const s=settings.soundType||(settings.sound===false?'off':'short');
+  if(s!=='off'||force){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const t=actx.currentTime;
+    if((force||s)==='long'||s==='long'){tone(f,t,.16);tone(f*1.26,t+.18,.16);tone(f*1.5,t+.36,.28)}else tone(f,t,.18)}catch(e){}}
+  if(settings.vibrate!==false&&navigator.vibrate)navigator.vibrate(s==='long'?[20,60,20]:15)}
 
 /* ================= hodnocení při spuštění ================= */
 const FBKEY='martini.fb.v1';let fbRate=0;
@@ -1337,14 +1457,19 @@ $('fbSend').onclick=()=>{
   if(settings.fbEmail){const body=`Hodnocení: ${'★'.repeat(fbRate)}${'☆'.repeat(5-fbRate)} (${fbRate}/5)\n\n${c}\n\nVerze ${APP_VERSION}`;
     setTimeout(()=>{location.href=`mailto:${encodeURIComponent(settings.fbEmail)}?subject=${encodeURIComponent('Martini rozvoz – hodnocení appky')}&body=${encodeURIComponent(body)}`},300)}
 };
-function maybeFb(){let last='';try{last=localStorage.getItem(FBKEY+'.last')||''}catch(e){}if(last!==new Date().toDateString())setTimeout(()=>{if(!document.querySelector('.sheet.on'))openFb()},1200)}
+function maybeFb(){if(settings.dailyFb===false)return;let last='';try{last=localStorage.getItem(FBKEY+'.last')||''}catch(e){}if(last!==new Date().toDateString())setTimeout(()=>{if(!document.querySelector('.sheet.on'))openFb()},1200)}
 
 // převzetí dat ze staré verze
 try{if(!orders.length){const old=JSON.parse(localStorage.getItem('martini.orders.v1')||'[]');if(old.length){orders=old.map(o=>({...o,collect:o.pay==='zaplaceno'?'0':o.total}));save()}}}catch(e){}
 if(!settings.shiftStart){const a=orders.filter(o=>o.status!=='dorucena'||o.done);if(a.length){settings.shiftStart=Math.min(...a.map(o=>o.created||Date.now()));saveSettings()}}
+if(settings.piz){PIZZERIA.lat=settings.piz.lat;PIZZERIA.lon=settings.piz.lon}
 render();
 maybeFb();
-try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast('Appka aktualizována'),400)}}catch(e){}
+(async()=>{if(settings.piz&&settings.piz.src!=='auto0')return;
+  const o={street:PIZ_ADDR,city:'Dobříš'};let r=await ruianGeocode(o);
+  if(!r){const n=await geoFetch(PIZ_ADDR+', Dobříš');if(n)r=n}
+  if(r&&!(settings.piz&&settings.piz.src==='manual'))setPizzeria(r.lat,r.lon,'auto')})();
+try{const u=sessionStorage.getItem('martini.updated');if(u){sessionStorage.removeItem('martini.updated');setTimeout(()=>toast(settings.news!==false?'Aktualizováno: '+NEWS:'Appka aktualizována'),400)}}catch(e){}
 setTimeout(startGeo,1500);
 (async()=>{for(const o of orders.filter(o=>o.street&&!o.lat&&o.status!=='dorucena')){await geocode(o);await new Promise(r=>setTimeout(r,1100))}})();
 window.__app={parseReceipt,prepImage,get map(){return map},setPos(p){myPos=p;updateMe();render()}};
